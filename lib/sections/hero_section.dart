@@ -1,11 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:url_launcher/url_launcher.dart';
+import '../services/firestore_service.dart';
 import '../theme/app_colors.dart';
+import '../utils/icon_mapper.dart';
 import '../widgets/section_container.dart';
 
 class HeroSection extends StatelessWidget {
-  const HeroSection({super.key});
+  final Map<String, dynamic> profile;
+
+  const HeroSection({super.key, required this.profile});
 
   @override
   Widget build(BuildContext context) {
@@ -33,16 +37,16 @@ class HeroSection extends StatelessWidget {
             ? Row(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  Expanded(child: _HeroContent()),
+                  Expanded(child: _HeroContent(profile: profile)),
                   const SizedBox(width: 48),
-                  Expanded(child: _HeroImage()),
+                  Expanded(child: _HeroImage(profile: profile)),
                 ],
               )
             : Column(
                 children: [
-                  _HeroContent(),
+                  _HeroContent(profile: profile),
                   const SizedBox(height: 48),
-                  _HeroImage(),
+                  _HeroImage(profile: profile),
                 ],
               ),
       ),
@@ -51,28 +55,37 @@ class HeroSection extends StatelessWidget {
 }
 
 class _HeroContent extends StatelessWidget {
+  final Map<String, dynamic> profile;
+
+  const _HeroContent({required this.profile});
+
   @override
   Widget build(BuildContext context) {
     final width = MediaQuery.of(context).size.width;
     final isDesktop = width >= 768;
+    final badge = profile['badge'] as String?;
+    final heroTitle = profile['heroTitle'] as String? ?? "Hi, I'm a\n Developer";
+    final heroHighlight = profile['heroHighlight'] as String?;
+    final heroDescription = profile['heroDescription'] as String? ?? '';
+    final cvUrl = profile['cvUrl'] as String?;
+    final contactEmail = profile['contactEmail'] as String?;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Badge
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-          decoration: BoxDecoration(
-            color: AppColors.primary.withValues(alpha: 0.1),
-            borderRadius: BorderRadius.circular(999),
+        if (badge != null && badge.isNotEmpty)
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            decoration: BoxDecoration(
+              color: AppColors.primary.withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(999),
+            ),
+            child: Text(
+              badge,
+              style: const TextStyle(fontSize: 14, color: AppColors.foreground),
+            ),
           ),
-          child: const Text(
-            'Flutter Developer',
-            style: TextStyle(fontSize: 14, color: AppColors.foreground),
-          ),
-        ),
-        const SizedBox(height: 16),
-        // Title
+        if (badge != null && badge.isNotEmpty) const SizedBox(height: 16),
         RichText(
           text: TextSpan(
             style: TextStyle(
@@ -81,80 +94,86 @@ class _HeroContent extends StatelessWidget {
               color: AppColors.foreground,
               height: 1.2,
             ),
-            children: const [
-              TextSpan(text: "Hi, I'm a\n"),
-              TextSpan(
-                text: ' Flutter Developer',
-                style: TextStyle(color: AppColors.primary),
-              ),
+            children: [
+              TextSpan(text: heroTitle),
+              if (heroHighlight != null && heroHighlight.isNotEmpty)
+                TextSpan(
+                  text: heroHighlight,
+                  style: const TextStyle(color: AppColors.primary),
+                ),
             ],
           ),
         ),
-        const SizedBox(height: 16),
-        // Description
-        const Text(
-          "With over 10+ published apps in stores, I specialize in creating beautiful, performant mobile applications using Flutter. Let's bring your ideas to life.",
-          style: TextStyle(
-            fontSize: 17,
-            color: AppColors.mutedForeground,
-            height: 1.6,
+        if (heroDescription.isNotEmpty) ...[
+          const SizedBox(height: 16),
+          Text(
+            heroDescription,
+            style: const TextStyle(
+              fontSize: 17,
+              color: AppColors.mutedForeground,
+              height: 1.6,
+            ),
           ),
-        ),
+        ],
         const SizedBox(height: 32),
-        // Buttons
         Wrap(
           spacing: 16,
           runSpacing: 16,
           children: [
-            ElevatedButton.icon(
-              onPressed: () {},
-              icon: const Icon(Icons.mail_outline, size: 20),
-              label: const Text('Get In Touch'),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.primary,
-                foregroundColor: AppColors.primaryForeground,
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8)),
-                elevation: 0,
+            if (contactEmail != null && contactEmail.isNotEmpty)
+              ElevatedButton.icon(
+                onPressed: () => launchUrl(Uri.parse('mailto:$contactEmail')),
+                icon: const Icon(Icons.mail_outline, size: 20),
+                label: const Text('Get In Touch'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.primary,
+                  foregroundColor: AppColors.primaryForeground,
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8)),
+                  elevation: 0,
+                ),
               ),
-            ),
-            OutlinedButton.icon(
-              onPressed: () {},
-              icon: const Icon(Icons.download_outlined, size: 20),
-              label: const Text('Download CV'),
-              style: OutlinedButton.styleFrom(
-                foregroundColor: AppColors.foreground,
-                side: const BorderSide(color: AppColors.border),
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8)),
+            if (cvUrl != null && cvUrl.isNotEmpty)
+              OutlinedButton.icon(
+                onPressed: () => launchUrl(Uri.parse(cvUrl)),
+                icon: const Icon(Icons.download_outlined, size: 20),
+                label: const Text('Download CV'),
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: AppColors.foreground,
+                  side: const BorderSide(color: AppColors.border),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8)),
+                ),
               ),
-            ),
           ],
         ),
         const SizedBox(height: 32),
-        // Social icons
-        Row(
-          children: [
-            _SocialIconButton(
-              icon: FontAwesomeIcons.github,
-              onTap: () => launchUrl(Uri.parse('https://github.com')),
-            ),
-            const SizedBox(width: 16),
-            _SocialIconButton(
-              icon: FontAwesomeIcons.linkedin,
-              onTap: () => launchUrl(Uri.parse('https://linkedin.com')),
-            ),
-            const SizedBox(width: 16),
-            _SocialIconButton(
-              icon: FontAwesomeIcons.envelope,
-              onTap: () =>
-                  launchUrl(Uri.parse('mailto:your.email@example.com')),
-            ),
-          ],
+        StreamBuilder<List<Map<String, dynamic>>>(
+          stream: FirestoreService.collectionStream('social_links'),
+          builder: (context, snap) {
+            final links = snap.data ?? [];
+            if (links.isEmpty) return const SizedBox.shrink();
+            return Row(
+              children: [
+                for (int i = 0; i < links.length; i++) ...[
+                  if (i > 0) const SizedBox(width: 16),
+                  _SocialIconButton(
+                    icon: mapIcon(links[i]['icon'] as String?),
+                    onTap: () {
+                      final url = links[i]['url'] as String?;
+                      if (url != null && url.isNotEmpty) {
+                        launchUrl(Uri.parse(url));
+                      }
+                    },
+                  ),
+                ],
+              ],
+            );
+          },
         ),
       ],
     );
@@ -205,14 +224,19 @@ class _SocialIconButtonState extends State<_SocialIconButton> {
 }
 
 class _HeroImage extends StatelessWidget {
+  final Map<String, dynamic> profile;
+
+  const _HeroImage({required this.profile});
+
   @override
   Widget build(BuildContext context) {
+    final heroImage = profile['heroImage'] as String?;
+
     return Column(
       children: [
         Stack(
           clipBehavior: Clip.none,
           children: [
-            // Main image
             ClipRRect(
               borderRadius: BorderRadius.circular(16),
               child: SizedBox(
@@ -221,19 +245,22 @@ class _HeroImage extends StatelessWidget {
                 child: Stack(
                   fit: StackFit.expand,
                   children: [
-                    Image.network(
-                      'https://images.unsplash.com/photo-1719400471588-575b23e27bd7?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxwcm9mZXNzaW9uYWwlMjBkZXZlbG9wZXIlMjB3b3Jrc3BhY2UlMjBjb2Rpbmd8ZW58MXx8fHwxNzcyMjU0NjE2fDA&ixlib=rb-4.1.0&q=80&w=1080',
-                      fit: BoxFit.cover,
-                      loadingBuilder: (ctx, child, progress) {
-                        if (progress == null) return child;
-                        return Container(
-                          color: AppColors.accent,
-                          child: const Center(
-                              child: CircularProgressIndicator(
-                                  color: AppColors.primary)),
-                        );
-                      },
-                    ),
+                    if (heroImage != null && heroImage.isNotEmpty)
+                      Image.network(
+                        heroImage,
+                        fit: BoxFit.cover,
+                        loadingBuilder: (ctx, child, progress) {
+                          if (progress == null) return child;
+                          return Container(
+                            color: AppColors.accent,
+                            child: const Center(
+                                child: CircularProgressIndicator(
+                                    color: AppColors.primary)),
+                          );
+                        },
+                      )
+                    else
+                      Container(color: AppColors.accent),
                     Container(
                       decoration: BoxDecoration(
                         gradient: LinearGradient(
@@ -250,40 +277,48 @@ class _HeroImage extends StatelessWidget {
                 ),
               ),
             ),
-            // Floating stats card
             Positioned(
               bottom: -28,
               left: 16,
               right: 16,
-              child: Container(
-                padding: const EdgeInsets.all(20),
-                decoration: BoxDecoration(
-                  color: AppColors.card,
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: AppColors.border),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.08),
-                      blurRadius: 20,
-                      offset: const Offset(0, 4),
+              child: StreamBuilder<List<Map<String, dynamic>>>(
+                stream: FirestoreService.collectionStream('stats'),
+                builder: (context, snap) {
+                  final stats = snap.data ?? [];
+                  if (stats.isEmpty) return const SizedBox.shrink();
+                  return Container(
+                    padding: const EdgeInsets.all(20),
+                    decoration: BoxDecoration(
+                      color: AppColors.card,
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: AppColors.border),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.08),
+                          blurRadius: 20,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
                     ),
-                  ],
-                ),
-                child: const Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
-                  children: [
-                    _StatItem(value: '10+', label: 'Apps Published'),
-                    _StatDivider(),
-                    _StatItem(value: '5+', label: 'Years Experience'),
-                    _StatDivider(),
-                    _StatItem(value: '100K+', label: 'Downloads'),
-                  ],
-                ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceAround,
+                      children: [
+                        for (int i = 0; i < stats.length; i++) ...[
+                          if (i > 0) _StatDivider(),
+                          _StatItem(
+                            value: stats[i]['value'] as String? ?? '',
+                            label: stats[i]['label'] as String? ?? '',
+                          ),
+                        ],
+                      ],
+                    ),
+                  );
+                },
               ),
             ),
           ],
         ),
-        const SizedBox(height: 44), // offset for floating card
+        const SizedBox(height: 44),
       ],
     );
   }
@@ -319,8 +354,6 @@ class _StatItem extends StatelessWidget {
 }
 
 class _StatDivider extends StatelessWidget {
-  const _StatDivider();
-
   @override
   Widget build(BuildContext context) {
     return Container(width: 1, height: 40, color: AppColors.border);

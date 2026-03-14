@@ -3,7 +3,9 @@ import '../theme/app_colors.dart';
 import '../widgets/section_container.dart';
 
 class ContactSection extends StatefulWidget {
-  const ContactSection({super.key});
+  final Map<String, dynamic> profile;
+
+  const ContactSection({super.key, required this.profile});
 
   @override
   State<ContactSection> createState() => _ContactSectionState();
@@ -44,9 +46,23 @@ class _ContactSectionState extends State<ContactSection> {
 
   @override
   Widget build(BuildContext context) {
+    final profile = widget.profile;
     final width = MediaQuery.of(context).size.width;
     final titleSize = width >= 768 ? 36.0 : 28.0;
     final isDesktop = width >= 1024;
+    final contactTitle =
+        profile['contactTitle'] as String? ?? 'Get In Touch';
+    final contactDescription = profile['contactDescription'] as String?;
+    final contactEmail = profile['contactEmail'] as String?;
+    final contactPhone = profile['contactPhone'] as String?;
+    final contactLocation = profile['contactLocation'] as String?;
+    final contactCtaTitle = profile['contactCtaTitle'] as String?;
+    final contactCtaDescription =
+        profile['contactCtaDescription'] as String?;
+
+    final hasContactInfo = (contactEmail != null && contactEmail.isNotEmpty) ||
+        (contactPhone != null && contactPhone.isNotEmpty) ||
+        (contactLocation != null && contactLocation.isNotEmpty);
 
     return Container(
       color: AppColors.accent.withValues(alpha: 0.3),
@@ -54,9 +70,8 @@ class _ContactSectionState extends State<ContactSection> {
         extraPadding: const EdgeInsets.symmetric(vertical: 80),
         child: Column(
           children: [
-            // Header
             Text(
-              'Get In Touch',
+              contactTitle,
               style: TextStyle(
                 fontSize: titleSize,
                 fontWeight: FontWeight.bold,
@@ -64,38 +79,64 @@ class _ContactSectionState extends State<ContactSection> {
               ),
               textAlign: TextAlign.center,
             ),
-            const SizedBox(height: 16),
-            const Text(
-              "Have a project in mind or want to collaborate? I'd love to hear from you!",
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                  color: AppColors.mutedForeground, height: 1.6, fontSize: 16),
-            ),
+            if (contactDescription != null &&
+                contactDescription.isNotEmpty) ...[
+              const SizedBox(height: 16),
+              Text(
+                contactDescription,
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                    color: AppColors.mutedForeground,
+                    height: 1.6,
+                    fontSize: 16),
+              ),
+            ],
             const SizedBox(height: 64),
-            // Content
-            isDesktop
-                ? Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Expanded(child: _buildContactInfo()),
-                      const SizedBox(width: 48),
-                      Expanded(child: _buildForm()),
-                    ],
-                  )
-                : Column(
-                    children: [
-                      _buildContactInfo(),
-                      const SizedBox(height: 48),
-                      _buildForm(),
-                    ],
+            if (hasContactInfo && isDesktop)
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(
+                      child: _buildContactInfo(
+                    email: contactEmail,
+                    phone: contactPhone,
+                    location: contactLocation,
+                    ctaTitle: contactCtaTitle,
+                    ctaDescription: contactCtaDescription,
+                  )),
+                  const SizedBox(width: 48),
+                  Expanded(child: _buildForm()),
+                ],
+              )
+            else if (hasContactInfo)
+              Column(
+                children: [
+                  _buildContactInfo(
+                    email: contactEmail,
+                    phone: contactPhone,
+                    location: contactLocation,
+                    ctaTitle: contactCtaTitle,
+                    ctaDescription: contactCtaDescription,
                   ),
+                  const SizedBox(height: 48),
+                  _buildForm(),
+                ],
+              )
+            else
+              _buildForm(),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildContactInfo() {
+  Widget _buildContactInfo({
+    String? email,
+    String? phone,
+    String? location,
+    String? ctaTitle,
+    String? ctaDescription,
+  }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -107,53 +148,63 @@ class _ContactSectionState extends State<ContactSection> {
               color: AppColors.foreground),
         ),
         const SizedBox(height: 24),
-        _ContactInfoRow(
-          icon: Icons.mail_outline,
-          title: 'Email',
-          value: 'your.email@example.com',
-        ),
-        const SizedBox(height: 24),
-        _ContactInfoRow(
-          icon: Icons.phone_outlined,
-          title: 'Phone',
-          value: '+1 (555) 123-4567',
-        ),
-        const SizedBox(height: 24),
-        _ContactInfoRow(
-          icon: Icons.location_on_outlined,
-          title: 'Location',
-          value: 'Your City, Country',
-        ),
-        const SizedBox(height: 32),
-        Container(
-          width: double.infinity,
-          padding: const EdgeInsets.all(24),
-          decoration: BoxDecoration(
-            color: AppColors.card,
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: AppColors.border),
+        if (email != null && email.isNotEmpty) ...[
+          _ContactInfoRow(
+            icon: Icons.mail_outline,
+            title: 'Email',
+            value: email,
           ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: const [
-              Text(
-                "Let's Work Together",
-                style: TextStyle(
-                    fontWeight: FontWeight.w600,
-                    fontSize: 16,
-                    color: AppColors.foreground),
-              ),
-              SizedBox(height: 12),
-              Text(
-                "I'm currently available for freelance projects and full-time opportunities. Whether you need a new app built from scratch or help with an existing project, I'm here to help bring your vision to life.",
-                style: TextStyle(
-                    fontSize: 13,
-                    color: AppColors.mutedForeground,
-                    height: 1.6),
-              ),
-            ],
+          const SizedBox(height: 24),
+        ],
+        if (phone != null && phone.isNotEmpty) ...[
+          _ContactInfoRow(
+            icon: Icons.phone_outlined,
+            title: 'Phone',
+            value: phone,
           ),
-        ),
+          const SizedBox(height: 24),
+        ],
+        if (location != null && location.isNotEmpty) ...[
+          _ContactInfoRow(
+            icon: Icons.location_on_outlined,
+            title: 'Location',
+            value: location,
+          ),
+          const SizedBox(height: 24),
+        ],
+        if (ctaTitle != null && ctaTitle.isNotEmpty)
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(24),
+            decoration: BoxDecoration(
+              color: AppColors.card,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: AppColors.border),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  ctaTitle,
+                  style: const TextStyle(
+                      fontWeight: FontWeight.w600,
+                      fontSize: 16,
+                      color: AppColors.foreground),
+                ),
+                if (ctaDescription != null &&
+                    ctaDescription.isNotEmpty) ...[
+                  const SizedBox(height: 12),
+                  Text(
+                    ctaDescription,
+                    style: const TextStyle(
+                        fontSize: 13,
+                        color: AppColors.mutedForeground,
+                        height: 1.6),
+                  ),
+                ],
+              ],
+            ),
+          ),
       ],
     );
   }

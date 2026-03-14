@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../services/firestore_service.dart';
 import '../sections/header_section.dart';
 import '../sections/hero_section.dart';
 import '../sections/about_section.dart';
@@ -46,41 +47,57 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      body: Stack(
-        children: [
-          // Scrollable content
-          SingleChildScrollView(
-            controller: _scrollController,
-            child: Column(
-              children: [
-                const SizedBox(height: 72), // header offset
-                const HeroSection(),
-                SizedBox(key: _aboutKey, child: const AboutSection()),
-                SizedBox(key: _skillsKey, child: const SkillsSection()),
-                SizedBox(key: _projectsKey, child: const ProjectsSection()),
-                SizedBox(
-                    key: _experienceKey, child: const ExperienceSection()),
-                SizedBox(key: _contactKey, child: const ContactSection()),
-                const FooterSection(),
-              ],
-            ),
-          ),
-          // Fixed header overlay
-          Positioned(
-            top: 0,
-            left: 0,
-            right: 0,
-            child: HeaderSection(
-              onAbout: () => _scrollToSection(_aboutKey),
-              onSkills: () => _scrollToSection(_skillsKey),
-              onProjects: () => _scrollToSection(_projectsKey),
-              onExperience: () => _scrollToSection(_experienceKey),
-              onContact: () => _scrollToSection(_contactKey),
-            ),
-          ),
-        ],
+      body: StreamBuilder<Map<String, dynamic>?>(
+        stream: FirestoreService.profileStream(),
+        builder: (context, profileSnap) {
+          if (profileSnap.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
+          }
+          final profile = profileSnap.data ?? {};
+
+          return Stack(
+            children: [
+              SingleChildScrollView(
+                controller: _scrollController,
+                child: Column(
+                  children: [
+                    const SizedBox(height: 72),
+                    HeroSection(profile: profile),
+                    SizedBox(
+                        key: _aboutKey,
+                        child: AboutSection(profile: profile)),
+                    SizedBox(
+                        key: _skillsKey,
+                        child: SkillsSection(profile: profile)),
+                    SizedBox(
+                        key: _projectsKey,
+                        child: const ProjectsSection()),
+                    SizedBox(
+                        key: _experienceKey,
+                        child: ExperienceSection(profile: profile)),
+                    SizedBox(
+                        key: _contactKey,
+                        child: ContactSection(profile: profile)),
+                    FooterSection(profile: profile),
+                  ],
+                ),
+              ),
+              Positioned(
+                top: 0,
+                left: 0,
+                right: 0,
+                child: HeaderSection(
+                  onAbout: () => _scrollToSection(_aboutKey),
+                  onSkills: () => _scrollToSection(_skillsKey),
+                  onProjects: () => _scrollToSection(_projectsKey),
+                  onExperience: () => _scrollToSection(_experienceKey),
+                  onContact: () => _scrollToSection(_contactKey),
+                ),
+              ),
+            ],
+          );
+        },
       ),
     );
   }
 }
-
