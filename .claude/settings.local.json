@@ -39,7 +39,15 @@
       "Bash(pkill -f \"Google Chrome\" 2>/dev/null; pkill -f \"chrome\" 2>/dev/null; pkill -f \"flutter\" 2>/dev/null; sleep 2; echo \"killed all\")",
       "Bash(node /Users/aaita/Desktop/apps/portfolio/cleanup2.js 2>&1)",
       "Bash(node /Users/aaita/Desktop/apps/portfolio/seed_rest.js 2>&1)",
-      "Bash(curl -s \"https://firestore.googleapis.com/v1/projects/portfolio-60d78/databases/\\(default\\)/documents/technical_skills?pageSize=20\" | python3 -c \"\nimport json, sys\ndata = json.load\\(sys.stdin\\)\nfor doc in data.get\\('documents', []\\):\n    name = doc['name'].split\\('/'\\)[-1]\n    skill = doc['fields'].get\\('name', {}\\).get\\('stringValue', '?'\\)\n    order = doc['fields'].get\\('order', {}\\).get\\('integerValue', '?'\\)\n    print\\(f'{name}: {skill} \\(order={order}\\)'\\)\n\")"
+      "Bash(curl -s \"https://firestore.googleapis.com/v1/projects/portfolio-60d78/databases/\\(default\\)/documents/technical_skills?pageSize=20\" | python3 -c \"\nimport json, sys\ndata = json.load\\(sys.stdin\\)\nfor doc in data.get\\('documents', []\\):\n    name = doc['name'].split\\('/'\\)[-1]\n    skill = doc['fields'].get\\('name', {}\\).get\\('stringValue', '?'\\)\n    order = doc['fields'].get\\('order', {}\\).get\\('integerValue', '?'\\)\n    print\\(f'{name}: {skill} \\(order={order}\\)'\\)\n\")",
+      "Bash(for f:*)",
+      "Bash(cd:*)",
+      "Bash(dart analyze:*)",
+      "Bash(dart pub:*)",
+      "Bash(melos bootstrap:*)",
+      "Bash(melos:*)",
+      "Bash(MELOS_DEBUG=1 melos list 2>&1 | head -20)",
+      "mcp__plugin_firebase_firebase__firebase_validate_security_rules"
     ]
   }
 }

@@ -1,0 +1,16 @@
+name: core
+description: "Shared models, services, and utilities for the portfolio workspace"
+publish_to: 'none'
+version: 1.0.0
+
+environment:
+  sdk: ^3.9.0
+
+resolution: workspace
+
+dependencies:
+  flutter:
+    sdk: flutter
+  firebase_core: ^4.3.0
+  cloud_firestore: ^6.1.2
+  font_awesome_flutter: ^10.7.0

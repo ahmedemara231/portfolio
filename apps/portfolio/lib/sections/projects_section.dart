@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
-import '../services/firestore_service.dart';
+import 'package:core/core.dart';
 import '../theme/app_colors.dart';
-import '../utils/color_parser.dart';
 import '../widgets/section_container.dart';
 import '../widgets/responsive_grid.dart';
 

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../services/firestore_service.dart';
+import 'package:core/core.dart';
 import '../sections/header_section.dart';
 import '../sections/hero_section.dart';
 import '../sections/about_section.dart';
