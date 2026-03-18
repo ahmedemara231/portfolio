@@ -194,7 +194,17 @@ class _TechnicalSkillsList extends StatelessWidget {
                           ),
                           _HoverActions(
                             onEdit: () => onEdit(context, id, d),
-                            onDelete: () => FirestoreService.deleteDocument('technical_skills', id),
+                            onDelete: () async {
+                              try {
+                                await FirestoreService.deleteDocument('technical_skills', id);
+                              } catch (e) {
+                                if (context.mounted) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(content: Text('Failed to delete skill: $e')),
+                                  );
+                                }
+                              }
+                            },
                           ),
                         ],
                       ),
@@ -276,7 +286,17 @@ class _SoftSkillsList extends StatelessWidget {
                           ),
                           _HoverActions(
                             onEdit: () => onEdit(context, id, d),
-                            onDelete: () => FirestoreService.deleteDocument('soft_skills', id),
+                            onDelete: () async {
+                              try {
+                                await FirestoreService.deleteDocument('soft_skills', id);
+                              } catch (e) {
+                                if (context.mounted) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(content: Text('Failed to delete skill: $e')),
+                                  );
+                                }
+                              }
+                            },
                           ),
                         ],
                       ),
@@ -437,20 +457,28 @@ class _TechSkillModalState extends State<_TechSkillModal> {
 
   Future<void> _save() async {
     if (_nameCtrl.text.trim().isEmpty) return;
-    final map = {
-      'name': _nameCtrl.text.trim(),
-      'icon': _iconCtrl.text.trim(),
-      'level': _level,
-      'order': widget.data?['order'] ?? 0,
-    };
-    if (isEditing) {
-      await FirestoreService.updateDocument('technical_skills', widget.docId!, map);
-    } else {
-      final count = await FirestoreService.collectionCount('technical_skills');
-      map['order'] = count;
-      await FirestoreService.addDocument('technical_skills', map);
+    try {
+      final map = {
+        'name': _nameCtrl.text.trim(),
+        'icon': _iconCtrl.text.trim(),
+        'level': _level,
+        'order': widget.data?['order'] ?? 0,
+      };
+      if (isEditing) {
+        await FirestoreService.updateDocument('technical_skills', widget.docId!, map);
+      } else {
+        final count = await FirestoreService.collectionCount('technical_skills');
+        map['order'] = count;
+        await FirestoreService.addDocument('technical_skills', map);
+      }
+      if (mounted) Navigator.pop(context);
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to save skill: $e')),
+        );
+      }
     }
-    if (mounted) Navigator.pop(context);
   }
 
   @override
@@ -588,20 +616,28 @@ class _SoftSkillModalState extends State<_SoftSkillModal> {
 
   Future<void> _save() async {
     if (_nameCtrl.text.trim().isEmpty) return;
-    final map = {
-      'name': _nameCtrl.text.trim(),
-      'description': _descCtrl.text.trim(),
-      'icon': _iconCtrl.text.trim(),
-      'order': widget.data?['order'] ?? 0,
-    };
-    if (isEditing) {
-      await FirestoreService.updateDocument('soft_skills', widget.docId!, map);
-    } else {
-      final count = await FirestoreService.collectionCount('soft_skills');
-      map['order'] = count;
-      await FirestoreService.addDocument('soft_skills', map);
+    try {
+      final map = {
+        'name': _nameCtrl.text.trim(),
+        'description': _descCtrl.text.trim(),
+        'icon': _iconCtrl.text.trim(),
+        'order': widget.data?['order'] ?? 0,
+      };
+      if (isEditing) {
+        await FirestoreService.updateDocument('soft_skills', widget.docId!, map);
+      } else {
+        final count = await FirestoreService.collectionCount('soft_skills');
+        map['order'] = count;
+        await FirestoreService.addDocument('soft_skills', map);
+      }
+      if (mounted) Navigator.pop(context);
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to save skill: $e')),
+        );
+      }
     }
-    if (mounted) Navigator.pop(context);
   }
 
   @override
@@ -681,9 +717,17 @@ class _ToolsEditModalState extends State<_ToolsEditModal> {
   Future<void> _addTool() async {
     final name = _ctrl.text.trim();
     if (name.isEmpty) return;
-    final count = await FirestoreService.collectionCount('tools');
-    await FirestoreService.addDocument('tools', {'name': name, 'order': count});
-    _ctrl.clear();
+    try {
+      final count = await FirestoreService.collectionCount('tools');
+      await FirestoreService.addDocument('tools', {'name': name, 'order': count});
+      _ctrl.clear();
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to add tool: $e')),
+        );
+      }
+    }
   }
 
   @override
@@ -737,7 +781,38 @@ class _ToolsEditModalState extends State<_ToolsEditModal> {
                           trailing: IconButton(
                             icon: const Icon(Icons.delete_outline, size: 18,
                                 color: DashboardColors.destructive),
-                            onPressed: () => FirestoreService.deleteDocument('tools', id),
+                            onPressed: () {
+                              showDialog(
+                                context: context,
+                                builder: (ctx) => AlertDialog(
+                                  title: const Text('Delete Tool'),
+                                  content: Text('Delete "$name"?'),
+                                  actions: [
+                                    TextButton(
+                                      onPressed: () => Navigator.pop(ctx),
+                                      child: const Text('Cancel'),
+                                    ),
+                                    ElevatedButton(
+                                      onPressed: () async {
+                                        Navigator.pop(ctx);
+                                        try {
+                                          await FirestoreService.deleteDocument('tools', id);
+                                        } catch (e) {
+                                          if (context.mounted) {
+                                            ScaffoldMessenger.of(context).showSnackBar(
+                                              SnackBar(content: Text('Failed to delete tool: $e')),
+                                            );
+                                          }
+                                        }
+                                      },
+                                      style: ElevatedButton.styleFrom(
+                                          backgroundColor: DashboardColors.destructive),
+                                      child: const Text('Delete'),
+                                    ),
+                                  ],
+                                ),
+                              );
+                            },
                           ),
                         );
                       },

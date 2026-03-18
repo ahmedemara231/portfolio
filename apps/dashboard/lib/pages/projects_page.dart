@@ -260,9 +260,17 @@ class _ProjectCard extends StatelessWidget {
         actions: [
           TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancel')),
           ElevatedButton(
-            onPressed: () {
-              FirestoreService.deleteDocument('projects', id);
+            onPressed: () async {
               Navigator.pop(ctx);
+              try {
+                await FirestoreService.deleteDocument('projects', id);
+              } catch (e) {
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('Failed to delete project: $e')),
+                  );
+                }
+              }
             },
             style: ElevatedButton.styleFrom(backgroundColor: DashboardColors.destructive),
             child: const Text('Delete'),
@@ -292,6 +300,7 @@ class _ProjectFormModalState extends State<_ProjectFormModal> {
   late final TextEditingController _imageCtrl;
   late final TextEditingController _tagCtrl;
   late List<String> _tags;
+  bool _saving = false;
 
   bool get isEditing => widget.docId != null;
 
@@ -309,6 +318,7 @@ class _ProjectFormModalState extends State<_ProjectFormModal> {
     _imageCtrl = TextEditingController(text: d['image'] ?? '');
     _tagCtrl = TextEditingController();
     _tags = List<String>.from(d['tags'] ?? []);
+    _titleCtrl.addListener(() => setState(() {}));
   }
 
   @override
@@ -333,28 +343,37 @@ class _ProjectFormModalState extends State<_ProjectFormModal> {
   }
 
   Future<void> _save() async {
-    if (_titleCtrl.text.trim().isEmpty) return;
-    final map = {
-      'title': _titleCtrl.text.trim(),
-      'description': _descCtrl.text.trim(),
-      'downloads': _downloadsCtrl.text.trim(),
-      'rating': double.tryParse(_ratingCtrl.text) ?? 0,
-      'codeUrl': _codeUrlCtrl.text.trim(),
-      'liveUrl': _liveUrlCtrl.text.trim(),
-      'image': _imageCtrl.text.trim(),
-      'tags': _tags,
-      'tagColor': '',
-      'order': widget.data?['order'] ?? 0,
-    };
-    if (isEditing) {
-      await FirestoreService.updateDocument('projects', widget.docId!, map);
-    } else {
-      // Get count for order
-      final count = await FirestoreService.collectionCount('projects');
-      map['order'] = count;
-      await FirestoreService.addDocument('projects', map);
+    if (_titleCtrl.text.trim().isEmpty || _saving) return;
+    setState(() => _saving = true);
+    try {
+      final map = {
+        'title': _titleCtrl.text.trim(),
+        'description': _descCtrl.text.trim(),
+        'downloads': _downloadsCtrl.text.trim(),
+        'rating': double.tryParse(_ratingCtrl.text) ?? 0,
+        'codeUrl': _codeUrlCtrl.text.trim(),
+        'liveUrl': _liveUrlCtrl.text.trim(),
+        'image': _imageCtrl.text.trim(),
+        'tags': _tags,
+        'tagColor': '',
+        'order': widget.data?['order'] ?? 0,
+      };
+      if (isEditing) {
+        await FirestoreService.updateDocument('projects', widget.docId!, map);
+      } else {
+        final count = await FirestoreService.collectionCount('projects');
+        map['order'] = count;
+        await FirestoreService.addDocument('projects', map);
+      }
+      if (mounted) Navigator.pop(context);
+    } catch (e) {
+      if (mounted) {
+        setState(() => _saving = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to save project: $e')),
+        );
+      }
     }
-    if (mounted) Navigator.pop(context);
   }
 
   @override
@@ -511,8 +530,12 @@ class _ProjectFormModalState extends State<_ProjectFormModal> {
                   const SizedBox(width: 12),
                   Expanded(
                     child: ElevatedButton(
-                      onPressed: _titleCtrl.text.trim().isEmpty ? null : _save,
-                      child: Text(isEditing ? 'Save Changes' : 'Add Project'),
+                      onPressed: _titleCtrl.text.trim().isEmpty || _saving ? null : _save,
+                      child: _saving
+                          ? const SizedBox(
+                              width: 16, height: 16,
+                              child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                          : Text(isEditing ? 'Save Changes' : 'Add Project'),
                     ),
                   ),
                 ],

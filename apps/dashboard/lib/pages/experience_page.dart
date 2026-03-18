@@ -220,9 +220,17 @@ class _ExperienceCard extends StatelessWidget {
         actions: [
           TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancel')),
           ElevatedButton(
-            onPressed: () {
-              FirestoreService.deleteDocument('experiences', id);
+            onPressed: () async {
               Navigator.pop(ctx);
+              try {
+                await FirestoreService.deleteDocument('experiences', id);
+              } catch (e) {
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('Failed to delete experience: $e')),
+                  );
+                }
+              }
             },
             style: ElevatedButton.styleFrom(backgroundColor: DashboardColors.destructive),
             child: const Text('Delete'),
@@ -362,26 +370,34 @@ class _ExperienceFormModalState extends State<_ExperienceFormModal> {
 
   Future<void> _save() async {
     if (_titleCtrl.text.trim().isEmpty || _companyCtrl.text.trim().isEmpty) return;
-    final map = {
-      'title': _titleCtrl.text.trim(),
-      'company': _companyCtrl.text.trim(),
-      'location': _locationCtrl.text.trim(),
-      'period': _periodCtrl.text.trim(),
-      'duration': _durationCtrl.text.trim(),
-      'description': _descCtrl.text.trim(),
-      'achievements': _achievements,
-      'gradientColor1': _color1Ctrl.text.trim(),
-      'gradientColor2': _color2Ctrl.text.trim(),
-      'order': widget.data?['order'] ?? 0,
-    };
-    if (isEditing) {
-      await FirestoreService.updateDocument('experiences', widget.docId!, map);
-    } else {
-      final count = await FirestoreService.collectionCount('experiences');
-      map['order'] = count;
-      await FirestoreService.addDocument('experiences', map);
+    try {
+      final map = {
+        'title': _titleCtrl.text.trim(),
+        'company': _companyCtrl.text.trim(),
+        'location': _locationCtrl.text.trim(),
+        'period': _periodCtrl.text.trim(),
+        'duration': _durationCtrl.text.trim(),
+        'description': _descCtrl.text.trim(),
+        'achievements': _achievements,
+        'gradientColor1': _color1Ctrl.text.trim(),
+        'gradientColor2': _color2Ctrl.text.trim(),
+        'order': widget.data?['order'] ?? 0,
+      };
+      if (isEditing) {
+        await FirestoreService.updateDocument('experiences', widget.docId!, map);
+      } else {
+        final count = await FirestoreService.collectionCount('experiences');
+        map['order'] = count;
+        await FirestoreService.addDocument('experiences', map);
+      }
+      if (mounted) Navigator.pop(context);
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to save experience: $e')),
+        );
+      }
     }
-    if (mounted) Navigator.pop(context);
   }
 
   @override

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../services/firestore_service.dart';
 import '../theme/app_colors.dart';
 import '../widgets/section_container.dart';
 
@@ -27,8 +28,23 @@ class _ContactSectionState extends State<ContactSection> {
     super.dispose();
   }
 
-  void _handleSubmit() {
-    if (_formKey.currentState!.validate()) {
+  bool _isSubmitting = false;
+
+  Future<void> _handleSubmit() async {
+    if (!_formKey.currentState!.validate() || _isSubmitting) return;
+
+    setState(() => _isSubmitting = true);
+
+    try {
+      await FirestoreService.submitContactMessage(
+        name: _nameController.text.trim(),
+        email: _emailController.text.trim(),
+        subject: _subjectController.text.trim(),
+        message: _messageController.text.trim(),
+      );
+
+      if (!mounted) return;
+
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text(
@@ -41,6 +57,18 @@ class _ContactSectionState extends State<ContactSection> {
       _emailController.clear();
       _subjectController.clear();
       _messageController.clear();
+    } catch (_) {
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Failed to send message. Please try again.'),
+          backgroundColor: Colors.red,
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    } finally {
+      if (mounted) setState(() => _isSubmitting = false);
     }
   }
 
@@ -250,9 +278,18 @@ class _ContactSectionState extends State<ContactSection> {
           ),
           const SizedBox(height: 24),
           ElevatedButton.icon(
-            onPressed: _handleSubmit,
-            icon: const Icon(Icons.send, size: 18),
-            label: const Text('Send Message'),
+            onPressed: _isSubmitting ? null : _handleSubmit,
+            icon: _isSubmitting
+                ? const SizedBox(
+                    width: 18,
+                    height: 18,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      color: AppColors.primaryForeground,
+                    ),
+                  )
+                : const Icon(Icons.send, size: 18),
+            label: Text(_isSubmitting ? 'Sending...' : 'Send Message'),
             style: ElevatedButton.styleFrom(
               backgroundColor: AppColors.primary,
               foregroundColor: AppColors.primaryForeground,

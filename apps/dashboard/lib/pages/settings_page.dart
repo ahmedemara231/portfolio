@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:core/core.dart';
 import '../theme/dashboard_theme.dart';
@@ -64,26 +65,35 @@ class _SettingsPageState extends State<SettingsPage> {
 
   Future<void> _save() async {
     setState(() => _saving = true);
-    await FirestoreService.updateProfile({
-      'badge': _badgeCtrl.text.trim(),
-      'heroTitle': _heroTitleCtrl.text,
-      'heroHighlight': _heroHighlightCtrl.text,
-      'heroDescription': _heroDescCtrl.text.trim(),
-      'heroImage': _heroImageCtrl.text.trim(),
-      'cvUrl': _cvUrlCtrl.text.trim(),
-      'contactEmail': _emailCtrl.text.trim(),
-      'contactPhone': _phoneCtrl.text.trim(),
-      'contactLocation': _locationCtrl.text.trim(),
-      'aboutTitle': _aboutTitleCtrl.text.trim(),
-      'aboutDescription': _aboutDescCtrl.text.trim(),
-      'footerBrand': _footerBrandCtrl.text.trim(),
-      'footerDescription': _footerDescCtrl.text.trim(),
-    });
-    setState(() => _saving = false);
-    if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Settings saved'), duration: Duration(seconds: 2)),
-      );
+    try {
+      await FirestoreService.updateProfile({
+        'badge': _badgeCtrl.text.trim(),
+        'heroTitle': _heroTitleCtrl.text,
+        'heroHighlight': _heroHighlightCtrl.text,
+        'heroDescription': _heroDescCtrl.text.trim(),
+        'heroImage': _heroImageCtrl.text.trim(),
+        'cvUrl': _cvUrlCtrl.text.trim(),
+        'contactEmail': _emailCtrl.text.trim(),
+        'contactPhone': _phoneCtrl.text.trim(),
+        'contactLocation': _locationCtrl.text.trim(),
+        'aboutTitle': _aboutTitleCtrl.text.trim(),
+        'aboutDescription': _aboutDescCtrl.text.trim(),
+        'footerBrand': _footerBrandCtrl.text.trim(),
+        'footerDescription': _footerDescCtrl.text.trim(),
+      });
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Settings saved'), duration: Duration(seconds: 2)),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to save settings: $e')),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _saving = false);
     }
   }
 
@@ -277,12 +287,20 @@ class _SettingsPageState extends State<SettingsPage> {
               }),
               OutlinedButton.icon(
                 onPressed: () async {
-                  final count = await FirestoreService.collectionCount('social_links');
-                  await FirestoreService.addDocument('social_links', {
-                    'icon': 'link',
-                    'url': '',
-                    'order': count,
-                  });
+                  try {
+                    final count = await FirestoreService.collectionCount('social_links');
+                    await FirestoreService.addDocument('social_links', {
+                      'icon': 'link',
+                      'url': '',
+                      'order': count,
+                    });
+                  } catch (e) {
+                    if (context.mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text('Failed to add social link: $e')),
+                      );
+                    }
+                  }
                 },
                 icon: const Icon(Icons.add, size: 18),
                 label: const Text('Add Social Link'),
@@ -356,6 +374,7 @@ class _InlineSocialEditor extends StatefulWidget {
 class _InlineSocialEditorState extends State<_InlineSocialEditor> {
   late final TextEditingController _iconCtrl;
   late final TextEditingController _urlCtrl;
+  Timer? _debounce;
 
   @override
   void initState() {
@@ -366,6 +385,7 @@ class _InlineSocialEditorState extends State<_InlineSocialEditor> {
 
   @override
   void dispose() {
+    _debounce?.cancel();
     _iconCtrl.dispose();
     _urlCtrl.dispose();
     super.dispose();
@@ -380,7 +400,7 @@ class _InlineSocialEditorState extends State<_InlineSocialEditor> {
           child: TextField(
             controller: _iconCtrl,
             decoration: const InputDecoration(hintText: 'icon name', isDense: true),
-            onChanged: (_) => _save(),
+            onChanged: (_) => _debouncedSave(),
           ),
         ),
         const SizedBox(width: 8),
@@ -388,16 +408,21 @@ class _InlineSocialEditorState extends State<_InlineSocialEditor> {
           child: TextField(
             controller: _urlCtrl,
             decoration: const InputDecoration(hintText: 'URL', isDense: true),
-            onChanged: (_) => _save(),
+            onChanged: (_) => _debouncedSave(),
           ),
         ),
         IconButton(
-          onPressed: () => FirestoreService.deleteDocument('social_links', widget.id),
+          onPressed: () => _confirmDelete(context),
           icon: const Icon(Icons.delete_outline, size: 18, color: DashboardColors.destructive),
           splashRadius: 18,
         ),
       ],
     );
+  }
+
+  void _debouncedSave() {
+    _debounce?.cancel();
+    _debounce = Timer(const Duration(milliseconds: 500), _save);
   }
 
   void _save() {
@@ -406,5 +431,34 @@ class _InlineSocialEditorState extends State<_InlineSocialEditor> {
       'url': _urlCtrl.text.trim(),
       'order': widget.data['order'] ?? 0,
     });
+  }
+
+  void _confirmDelete(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Delete Social Link'),
+        content: const Text('Are you sure?'),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancel')),
+          ElevatedButton(
+            onPressed: () async {
+              Navigator.pop(ctx);
+              try {
+                await FirestoreService.deleteDocument('social_links', widget.id);
+              } catch (e) {
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('Failed to delete link: $e')),
+                  );
+                }
+              }
+            },
+            style: ElevatedButton.styleFrom(backgroundColor: DashboardColors.destructive),
+            child: const Text('Delete'),
+          ),
+        ],
+      ),
+    );
   }
 }

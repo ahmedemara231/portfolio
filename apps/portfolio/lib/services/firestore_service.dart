@@ -16,4 +16,20 @@ class FirestoreService {
         .snapshots()
         .map((snap) => snap.docs.map((d) => d.data()).toList());
   }
+
+  static Future<void> submitContactMessage({
+    required String name,
+    required String email,
+    required String subject,
+    required String message,
+  }) {
+    return _db.collection('messages').add({
+      'name': name,
+      'email': email,
+      'subject': subject,
+      'message': message,
+      'createdAt': FieldValue.serverTimestamp(),
+      'read': false,
+    });
+  }
 }
