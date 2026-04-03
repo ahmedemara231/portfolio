@@ -48,14 +48,7 @@
       "Bash(melos:*)",
       "Bash(MELOS_DEBUG=1 melos list 2>&1 | head -20)",
       "mcp__plugin_firebase_firebase__firebase_validate_security_rules",
-      "Bash(xargs cat:*)",
-      "mcp__vercel__list_teams",
-      "mcp__vercel__list_projects",
-      "Bash(vercel --version)",
-      "Bash(flutter --version)",
-      "Bash(vercel whoami:*)",
-      "Bash(vercel deploy:*)",
-      "Bash(vercel link:*)"
+      "Bash(xargs cat:*)"
     ]
   }
 }

@@ -1,81 +1,74 @@
 import 'package:flutter/material.dart';
+import 'package:core/core.dart';
 import '../theme/app_colors.dart';
 import '../widgets/section_container.dart';
 import '../widgets/responsive_grid.dart';
 
 class AboutSection extends StatelessWidget {
-  const AboutSection({super.key});
+  final Map<String, dynamic> profile;
+
+  const AboutSection({super.key, required this.profile});
 
   @override
   Widget build(BuildContext context) {
     final width = MediaQuery.of(context).size.width;
     final fontSize = width >= 768 ? 36.0 : 28.0;
     final cols = width >= 1024 ? 4 : (width >= 768 ? 2 : 1);
+    final aboutTitle = profile['aboutTitle'] as String? ?? 'About Me';
+    final aboutDescription = profile['aboutDescription'] as String?;
 
-    const features = [
-      (
-        icon: Icons.code,
-        title: 'Clean Code',
-        desc:
-            'Writing maintainable, scalable, and well-documented code following best practices.'
-      ),
-      (
-        icon: Icons.smartphone,
-        title: 'Cross-Platform',
-        desc:
-            'Building beautiful apps for both iOS and Android from a single codebase.'
-      ),
-      (
-        icon: Icons.bolt,
-        title: 'Performance',
-        desc:
-            'Optimizing apps for smooth 60fps animations and minimal load times.'
-      ),
-      (
-        icon: Icons.people_outline,
-        title: 'User-Centric',
-        desc: 'Creating intuitive interfaces that users love and enjoy using.'
-      ),
-    ];
+    return StreamBuilder<List<Map<String, dynamic>>>(
+      stream: FirestoreService.collectionStream('about_features'),
+      builder: (context, snap) {
+        final features = snap.data ?? [];
 
-    return Container(
-      color: AppColors.accent.withValues(alpha: 0.3),
-      child: SectionContainer(
-        extraPadding: const EdgeInsets.symmetric(vertical: 80),
-        child: Column(
-          children: [
-            // Section header
-            Text(
-              'About Me',
-              style: TextStyle(
-                fontSize: fontSize,
-                fontWeight: FontWeight.bold,
-                color: AppColors.foreground,
-              ),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 16),
-            const Text(
-              "I'm a passionate Flutter developer with a track record of delivering high-quality mobile applications. My expertise lies in transforming ideas into polished, production-ready apps that users love.",
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                color: AppColors.mutedForeground,
-                height: 1.6,
-                fontSize: 16,
-              ),
-            ),
-            const SizedBox(height: 64),
-            // Feature cards grid
-            ResponsiveGrid(
-              columns: cols,
+        return Container(
+          color: AppColors.accent.withValues(alpha: 0.3),
+          child: SectionContainer(
+            extraPadding: const EdgeInsets.symmetric(vertical: 80),
+            child: Column(
               children: [
-                for (final f in features)
-                  _FeatureCard(icon: f.icon, title: f.title, desc: f.desc),
+                Text(
+                  aboutTitle,
+                  style: TextStyle(
+                    fontSize: fontSize,
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.foreground,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                if (aboutDescription != null &&
+                    aboutDescription.isNotEmpty) ...[
+                  const SizedBox(height: 16),
+                  Text(
+                    aboutDescription,
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(
+                      color: AppColors.mutedForeground,
+                      height: 1.6,
+                      fontSize: 16,
+                    ),
+                  ),
+                ],
+                if (features.isNotEmpty) ...[
+                  const SizedBox(height: 64),
+                  ResponsiveGrid(
+                    columns: cols,
+                    children: [
+                      for (final f in features)
+                        _FeatureCard(
+                          icon: mapIcon(f['icon'] as String?),
+                          title: f['title'] as String? ?? '',
+                          desc: f['description'] as String? ?? '',
+                        ),
+                    ],
+                  ),
+                ],
               ],
             ),
-          ],
-        ),
-      ),
+          ),
+        );
+      },
     );
   }
 }

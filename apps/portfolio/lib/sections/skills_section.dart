@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:core/core.dart';
 import '../theme/app_colors.dart';
 import '../widgets/section_container.dart';
 import '../widgets/responsive_grid.dart';
 
 class SkillsSection extends StatelessWidget {
-  const SkillsSection({super.key});
+  final Map<String, dynamic> profile;
+
+  const SkillsSection({super.key, required this.profile});
 
   @override
   Widget build(BuildContext context) {
@@ -12,70 +15,21 @@ class SkillsSection extends StatelessWidget {
     final titleSize = width >= 768 ? 36.0 : 28.0;
     final techSkillCols = width >= 1024 ? 4 : (width >= 640 ? 2 : 1);
     final softSkillCols = width >= 1024 ? 3 : (width >= 768 ? 2 : 1);
-
-    const technicalSkills = [
-      (icon: Icons.code, name: 'Flutter & Dart', level: 'Expert'),
-      (icon: Icons.storage, name: 'Firebase', level: 'Advanced'),
-      (icon: Icons.bolt, name: 'REST APIs', level: 'Advanced'),
-      (icon: Icons.view_quilt, name: 'State Management', level: 'Expert'),
-      (icon: Icons.smartphone, name: 'Native Integration', level: 'Advanced'),
-      (icon: Icons.account_tree_outlined, name: 'Git & GitHub', level: 'Advanced'),
-      (icon: Icons.palette_outlined, name: 'UI/UX Design', level: 'Intermediate'),
-      (icon: Icons.data_object, name: 'SQLite & Hive', level: 'Advanced'),
-    ];
-
-    const softSkills = [
-      (
-        icon: Icons.chat_bubble_outline,
-        name: 'Communication',
-        desc: 'Clear and effective communication with team and stakeholders'
-      ),
-      (
-        icon: Icons.people_outline,
-        name: 'Team Leadership',
-        desc: 'Leading and mentoring development teams to success'
-      ),
-      (
-        icon: Icons.lightbulb_outline,
-        name: 'Problem Solving',
-        desc: 'Creative solutions to complex technical challenges'
-      ),
-      (
-        icon: Icons.gps_fixed,
-        name: 'Goal-Oriented',
-        desc: 'Focused on delivering results and meeting objectives'
-      ),
-      (
-        icon: Icons.access_time,
-        name: 'Time Management',
-        desc: 'Efficient prioritization and deadline management'
-      ),
-      (
-        icon: Icons.bolt,
-        name: 'Adaptability',
-        desc: 'Quick learner, adapting to new technologies and methodologies'
-      ),
-    ];
-
-    const technologies = [
-      'Flutter', 'Dart', 'Firebase', 'REST API', 'GraphQL', 'BLoC',
-      'Provider', 'Riverpod', 'GetX', 'SQLite', 'Hive', 'SharedPreferences',
-      'Git', 'GitHub Actions', 'Fastlane', 'Android Studio', 'VS Code',
-      'Xcode', 'Figma', 'Adobe XD', 'Postman', 'Jira', 'Slack', 'CI/CD',
-    ];
+    final skillsTitle =
+        profile['skillsTitle'] as String? ?? 'Skills & Expertise';
+    final skillsDescription = profile['skillsDescription'] as String?;
 
     return SectionContainer(
       extraPadding: const EdgeInsets.symmetric(vertical: 80),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Section header
           Align(
             alignment: Alignment.center,
             child: Column(
               children: [
                 Text(
-                  'Skills & Expertise',
+                  skillsTitle,
                   style: TextStyle(
                     fontSize: titleSize,
                     fontWeight: FontWeight.bold,
@@ -83,87 +37,131 @@ class SkillsSection extends StatelessWidget {
                   ),
                   textAlign: TextAlign.center,
                 ),
-                const SizedBox(height: 16),
-                const Text(
-                  'A comprehensive toolkit of technical abilities and interpersonal skills refined through years of development.',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                      color: AppColors.mutedForeground, height: 1.6, fontSize: 16),
-                ),
+                if (skillsDescription != null &&
+                    skillsDescription.isNotEmpty) ...[
+                  const SizedBox(height: 16),
+                  Text(
+                    skillsDescription,
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(
+                        color: AppColors.mutedForeground,
+                        height: 1.6,
+                        fontSize: 16),
+                  ),
+                ],
               ],
             ),
           ),
           const SizedBox(height: 64),
 
           // Technical Skills
-          const Text(
-            'Technical Skills',
-            style: TextStyle(
-                fontSize: 22,
-                fontWeight: FontWeight.w600,
-                color: AppColors.foreground),
+          StreamBuilder<List<Map<String, dynamic>>>(
+            stream: FirestoreService.collectionStream('technical_skills'),
+            builder: (context, snap) {
+              final skills = snap.data ?? [];
+              if (skills.isEmpty) return const SizedBox.shrink();
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'Technical Skills',
+                    style: TextStyle(
+                        fontSize: 22,
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.foreground),
+                  ),
+                  const SizedBox(height: 32),
+                  ResponsiveGrid(
+                    columns: techSkillCols,
+                    spacing: 16,
+                    runSpacing: 16,
+                    children: [
+                      for (final skill in skills)
+                        _TechSkillCard(
+                          icon: mapIcon(skill['icon'] as String?),
+                          name: skill['name'] as String? ?? '',
+                          level: skill['level'] as String? ?? '',
+                        ),
+                    ],
+                  ),
+                  const SizedBox(height: 64),
+                ],
+              );
+            },
           ),
-          const SizedBox(height: 32),
-          ResponsiveGrid(
-            columns: techSkillCols,
-            spacing: 16,
-            runSpacing: 16,
-            children: [
-              for (final skill in technicalSkills)
-                _TechSkillCard(
-                    icon: skill.icon, name: skill.name, level: skill.level),
-            ],
-          ),
-          const SizedBox(height: 64),
 
           // Soft Skills
-          const Text(
-            'Soft Skills',
-            style: TextStyle(
-                fontSize: 22,
-                fontWeight: FontWeight.w600,
-                color: AppColors.foreground),
+          StreamBuilder<List<Map<String, dynamic>>>(
+            stream: FirestoreService.collectionStream('soft_skills'),
+            builder: (context, snap) {
+              final skills = snap.data ?? [];
+              if (skills.isEmpty) return const SizedBox.shrink();
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'Soft Skills',
+                    style: TextStyle(
+                        fontSize: 22,
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.foreground),
+                  ),
+                  const SizedBox(height: 32),
+                  ResponsiveGrid(
+                    columns: softSkillCols,
+                    children: [
+                      for (final skill in skills)
+                        _SoftSkillCard(
+                          icon: mapIcon(skill['icon'] as String?),
+                          name: skill['name'] as String? ?? '',
+                          desc: skill['description'] as String? ?? '',
+                        ),
+                    ],
+                  ),
+                  const SizedBox(height: 64),
+                ],
+              );
+            },
           ),
-          const SizedBox(height: 32),
-          ResponsiveGrid(
-            columns: softSkillCols,
-            children: [
-              for (final skill in softSkills)
-                _SoftSkillCard(
-                    icon: skill.icon, name: skill.name, desc: skill.desc),
-            ],
-          ),
-          const SizedBox(height: 64),
 
           // Technologies & Tools
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.all(32),
-            decoration: BoxDecoration(
-              color: AppColors.card,
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: AppColors.border),
-            ),
-            child: Column(
-              children: [
-                const Text(
-                  'Technologies & Tools',
-                  style: TextStyle(
-                      fontSize: 22,
-                      fontWeight: FontWeight.w600,
-                      color: AppColors.foreground),
+          StreamBuilder<List<Map<String, dynamic>>>(
+            stream: FirestoreService.collectionStream('tools'),
+            builder: (context, snap) {
+              final tools = snap.data ?? [];
+              if (tools.isEmpty) return const SizedBox.shrink();
+              return Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(32),
+                decoration: BoxDecoration(
+                  color: AppColors.card,
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: AppColors.border),
                 ),
-                const SizedBox(height: 24),
-                Wrap(
-                  spacing: 12,
-                  runSpacing: 12,
-                  alignment: WrapAlignment.center,
+                child: Column(
                   children: [
-                    for (final tech in technologies) _TechChip(label: tech),
+                    const Text(
+                      'Technologies & Tools',
+                      style: TextStyle(
+                          fontSize: 22,
+                          fontWeight: FontWeight.w600,
+                          color: AppColors.foreground),
+                    ),
+                    const SizedBox(height: 24),
+                    Wrap(
+                      spacing: 12,
+                      runSpacing: 12,
+                      alignment: WrapAlignment.center,
+                      children: [
+                        for (final tool in tools)
+                          _TechChip(
+                              label: tool['name'] as String? ?? ''),
+                      ],
+                    ),
                   ],
                 ),
-              ],
-            ),
+              );
+            },
           ),
         ],
       ),
@@ -238,22 +236,24 @@ class _TechSkillCardState extends State<_TechSkillCard> {
                   fontSize: 15,
                   color: AppColors.foreground),
             ),
-            const SizedBox(height: 8),
-            Container(
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-              decoration: BoxDecoration(
-                color: AppColors.primary.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(999),
+            if (widget.level.isNotEmpty) ...[
+              const SizedBox(height: 8),
+              Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                decoration: BoxDecoration(
+                  color: AppColors.primary.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(999),
+                ),
+                child: Text(
+                  widget.level,
+                  style: const TextStyle(
+                      fontSize: 12,
+                      color: AppColors.primary,
+                      fontWeight: FontWeight.w500),
+                ),
               ),
-              child: Text(
-                widget.level,
-                style: const TextStyle(
-                    fontSize: 12,
-                    color: AppColors.primary,
-                    fontWeight: FontWeight.w500),
-              ),
-            ),
+            ],
           ],
         ),
       ),
@@ -327,14 +327,16 @@ class _SoftSkillCardState extends State<_SoftSkillCard> {
                         fontSize: 15,
                         color: AppColors.foreground),
                   ),
-                  const SizedBox(height: 6),
-                  Text(
-                    widget.desc,
-                    style: const TextStyle(
-                        fontSize: 13,
-                        color: AppColors.mutedForeground,
-                        height: 1.5),
-                  ),
+                  if (widget.desc.isNotEmpty) ...[
+                    const SizedBox(height: 6),
+                    Text(
+                      widget.desc,
+                      style: const TextStyle(
+                          fontSize: 13,
+                          color: AppColors.mutedForeground,
+                          height: 1.5),
+                    ),
+                  ],
                 ],
               ),
             ),

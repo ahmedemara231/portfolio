@@ -53,12 +53,13 @@ class DefaultFirebaseOptions {
   }
 
   static const FirebaseOptions web = FirebaseOptions(
-    apiKey: 'AIzaSyD9GMPM9UpyFNZaqVKqk94DCBIwiR6Q_D8',
-    appId: '1:693391040584:web:dc9740c4643aa84ee4387d',
-    messagingSenderId: '693391040584',
-    projectId: 'portfolio-ce1ae',
-    authDomain: 'portfolio-ce1ae.firebaseapp.com',
-    storageBucket: 'portfolio-ce1ae.firebasestorage.app',
-    measurementId: 'G-END7EZ29BX',
+    apiKey: 'AIzaSyCUJY9s-lnGXlfW6KgrVLj_mEVwM6_Dgis',
+    appId: '1:103600749341:web:2690c74627c2ad9030bff4',
+    messagingSenderId: '103600749341',
+    projectId: 'portfolio-60d78',
+    authDomain: 'portfolio-60d78.firebaseapp.com',
+    storageBucket: 'portfolio-60d78.firebasestorage.app',
+    measurementId: 'G-TTJPE64XNX',
   );
+
 }

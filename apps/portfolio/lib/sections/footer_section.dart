@@ -1,17 +1,23 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:core/core.dart';
 import '../theme/app_colors.dart';
 import '../widgets/section_container.dart';
 
 class FooterSection extends StatelessWidget {
-  const FooterSection({super.key});
+  final Map<String, dynamic> profile;
+
+  const FooterSection({super.key, required this.profile});
 
   @override
   Widget build(BuildContext context) {
     final width = MediaQuery.of(context).size.width;
     final isDesktop = width >= 768;
     final year = DateTime.now().year;
+    final footerBrand = profile['footerBrand'] as String? ?? 'Portfolio';
+    final footerDescription = profile['footerDescription'] as String?;
+    final copyright = profile['copyright'] as String?;
 
     return Container(
       color: AppColors.primary,
@@ -23,7 +29,9 @@ class FooterSection extends StatelessWidget {
                 ? Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Expanded(child: _buildBrand()),
+                      Expanded(
+                          child: _buildBrand(
+                              footerBrand, footerDescription)),
                       Expanded(child: _buildLinks()),
                       Expanded(child: _buildSocial()),
                     ],
@@ -31,7 +39,7 @@ class FooterSection extends StatelessWidget {
                 : Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      _buildBrand(),
+                      _buildBrand(footerBrand, footerDescription),
                       const SizedBox(height: 32),
                       _buildLinks(),
                       const SizedBox(height: 32),
@@ -42,7 +50,8 @@ class FooterSection extends StatelessWidget {
             const Divider(color: Color(0x33FFFFFF)),
             const SizedBox(height: 24),
             Text(
-              '© $year Flutter Developer Portfolio. All rights reserved.',
+              copyright ??
+                  '\u00a9 $year $footerBrand. All rights reserved.',
               textAlign: TextAlign.center,
               style: const TextStyle(
                 fontSize: 13,
@@ -55,17 +64,18 @@ class FooterSection extends StatelessWidget {
     );
   }
 
-  Widget _buildBrand() {
+  Widget _buildBrand(String brand, String? description) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
-      children: const [
+      children: [
         Row(
           children: [
-            Icon(Icons.code, size: 24, color: AppColors.primaryForeground),
-            SizedBox(width: 8),
+            const Icon(
+                Icons.code, size: 24, color: AppColors.primaryForeground),
+            const SizedBox(width: 8),
             Text(
-              'Flutter Developer',
-              style: TextStyle(
+              brand,
+              style: const TextStyle(
                 fontWeight: FontWeight.w600,
                 fontSize: 16,
                 color: AppColors.primaryForeground,
@@ -73,15 +83,17 @@ class FooterSection extends StatelessWidget {
             ),
           ],
         ),
-        SizedBox(height: 12),
-        Text(
-          'Creating beautiful, performant mobile applications with passion and precision.',
-          style: TextStyle(
-            fontSize: 13,
-            color: Color(0xCCFFFFFF),
-            height: 1.6,
+        if (description != null && description.isNotEmpty) ...[
+          const SizedBox(height: 12),
+          Text(
+            description,
+            style: const TextStyle(
+              fontSize: 13,
+              color: Color(0xCCFFFFFF),
+              height: 1.6,
+            ),
           ),
-        ),
+        ],
       ],
     );
   }
@@ -109,42 +121,41 @@ class FooterSection extends StatelessWidget {
   }
 
   Widget _buildSocial() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Text(
-          'Connect',
-          style: TextStyle(
-              fontWeight: FontWeight.w600,
-              fontSize: 15,
-              color: AppColors.primaryForeground),
-        ),
-        const SizedBox(height: 16),
-        Row(
+    return StreamBuilder<List<Map<String, dynamic>>>(
+      stream: FirestoreService.collectionStream('social_links'),
+      builder: (context, snap) {
+        final links = snap.data ?? [];
+        if (links.isEmpty) return const SizedBox.shrink();
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _SocialBtn(
-              icon: FontAwesomeIcons.github,
-              onTap: () => launchUrl(Uri.parse('https://github.com')),
+            const Text(
+              'Connect',
+              style: TextStyle(
+                  fontWeight: FontWeight.w600,
+                  fontSize: 15,
+                  color: AppColors.primaryForeground),
             ),
-            const SizedBox(width: 12),
-            _SocialBtn(
-              icon: FontAwesomeIcons.linkedin,
-              onTap: () => launchUrl(Uri.parse('https://linkedin.com')),
-            ),
-            const SizedBox(width: 12),
-            _SocialBtn(
-              icon: FontAwesomeIcons.twitter,
-              onTap: () => launchUrl(Uri.parse('https://twitter.com')),
-            ),
-            const SizedBox(width: 12),
-            _SocialBtn(
-              icon: FontAwesomeIcons.envelope,
-              onTap: () =>
-                  launchUrl(Uri.parse('mailto:your.email@example.com')),
+            const SizedBox(height: 16),
+            Row(
+              children: [
+                for (int i = 0; i < links.length; i++) ...[
+                  if (i > 0) const SizedBox(width: 12),
+                  _SocialBtn(
+                    icon: mapIcon(links[i]['icon'] as String?),
+                    onTap: () {
+                      final url = links[i]['url'] as String?;
+                      if (url != null && url.isNotEmpty) {
+                        launchUrl(Uri.parse(url));
+                      }
+                    },
+                  ),
+                ],
+              ],
             ),
           ],
-        ),
-      ],
+        );
+      },
     );
   }
 }

@@ -1,0 +1,27 @@
+name: dashboard
+description: "Portfolio Admin Dashboard"
+publish_to: 'none'
+
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.9.0
+
+resolution: workspace
+
+dependencies:
+  flutter:
+    sdk: flutter
+  core:
+  firebase_core: ^4.3.0
+  cloud_firestore: ^6.1.2
+  font_awesome_flutter: ^10.7.0
+  fl_chart: ^0.70.2
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^5.0.0
+
+flutter:
+  uses-material-design: true
