@@ -48,7 +48,10 @@
       "Bash(melos:*)",
       "Bash(MELOS_DEBUG=1 melos list 2>&1 | head -20)",
       "mcp__plugin_firebase_firebase__firebase_validate_security_rules",
-      "Bash(xargs cat:*)"
+      "Bash(xargs cat:*)",
+      "Bash(echo \"exit: $?\")",
+      "mcp__vercel__get_project",
+      "mcp__vercel__get_deployment_build_logs"
     ]
   }
 }
