@@ -1,8 +1,4 @@
-{
-  "firestore": {
-    "rules": "firestore.rules"
-  },
-  "flutter": {
+{"flutter": {
     "platforms": {
       "dart": {
         "lib/firebase_options.dart": {
@@ -15,7 +11,7 @@
     }
   },
   "hosting": {
-    "public": "web/build",
+    "public": "build/web",
     "ignore": [
       "firebase.json",
       "**/.*",
