@@ -11,6 +11,7 @@
     }
   },
   "hosting": {
+    "site": "dashboard-93da1",
     "public": "build/web",
     "ignore": [
       "firebase.json",
