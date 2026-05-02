@@ -1,5 +1,6 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../theme/app_colors.dart';
 
 class HeaderSection extends StatefulWidget {
@@ -8,6 +9,7 @@ class HeaderSection extends StatefulWidget {
   final VoidCallback onProjects;
   final VoidCallback onExperience;
   final VoidCallback onContact;
+  final String cvUrl;
 
   const HeaderSection({
     super.key,
@@ -16,6 +18,7 @@ class HeaderSection extends StatefulWidget {
     required this.onProjects,
     required this.onExperience,
     required this.onContact,
+    this.cvUrl = '',
   });
 
   @override
@@ -75,6 +78,23 @@ class _HeaderSectionState extends State<HeaderSection> {
                       const SizedBox(width: 32),
                       _NavButton('Experience', widget.onExperience),
                       const SizedBox(width: 32),
+                      if (widget.cvUrl.isNotEmpty) ...[
+                        OutlinedButton.icon(
+                          onPressed: () => launchUrl(Uri.parse(widget.cvUrl)),
+                          icon: const Icon(Icons.download_outlined, size: 18),
+                          label: const Text('CV'),
+                          style: OutlinedButton.styleFrom(
+                            foregroundColor: AppColors.foreground,
+                            side: const BorderSide(color: AppColors.border),
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 16, vertical: 12),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                      ],
                       ElevatedButton(
                         onPressed: widget.onContact,
                         style: ElevatedButton.styleFrom(
@@ -125,6 +145,11 @@ class _HeaderSectionState extends State<HeaderSection> {
                         widget.onExperience();
                         setState(() => _isMenuOpen = false);
                       }),
+                      if (widget.cvUrl.isNotEmpty)
+                        _MobileNavButton('Download CV', () {
+                          launchUrl(Uri.parse(widget.cvUrl));
+                          setState(() => _isMenuOpen = false);
+                        }),
                       const SizedBox(height: 8),
                       SizedBox(
                         width: double.infinity,

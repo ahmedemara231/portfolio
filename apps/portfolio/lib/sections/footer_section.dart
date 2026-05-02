@@ -7,8 +7,21 @@ import '../widgets/section_container.dart';
 
 class FooterSection extends StatelessWidget {
   final Map<String, dynamic> profile;
+  final VoidCallback? onAbout;
+  final VoidCallback? onSkills;
+  final VoidCallback? onProjects;
+  final VoidCallback? onExperience;
+  final VoidCallback? onContact;
 
-  const FooterSection({super.key, required this.profile});
+  const FooterSection({
+    super.key,
+    required this.profile,
+    this.onAbout,
+    this.onSkills,
+    this.onProjects,
+    this.onExperience,
+    this.onContact,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -99,7 +112,13 @@ class FooterSection extends StatelessWidget {
   }
 
   Widget _buildLinks() {
-    const links = ['About', 'Skills', 'Projects', 'Experience', 'Contact'];
+    final entries = <(String, VoidCallback?)>[
+      ('About', onAbout),
+      ('Skills', onSkills),
+      ('Projects', onProjects),
+      ('Experience', onExperience),
+      ('Contact', onContact),
+    ];
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -112,8 +131,8 @@ class FooterSection extends StatelessWidget {
               color: AppColors.primaryForeground),
         ),
         const SizedBox(height: 16),
-        for (final link in links) ...[
-          _FooterLink(label: link),
+        for (final entry in entries) ...[
+          _FooterLink(label: entry.$1, onTap: entry.$2),
           const SizedBox(height: 8),
         ],
       ],
@@ -162,8 +181,9 @@ class FooterSection extends StatelessWidget {
 
 class _FooterLink extends StatefulWidget {
   final String label;
+  final VoidCallback? onTap;
 
-  const _FooterLink({required this.label});
+  const _FooterLink({required this.label, this.onTap});
 
   @override
   State<_FooterLink> createState() => _FooterLinkState();
@@ -175,16 +195,18 @@ class _FooterLinkState extends State<_FooterLink> {
   @override
   Widget build(BuildContext context) {
     return MouseRegion(
-      cursor: SystemMouseCursors.click,
+      cursor: widget.onTap == null
+          ? SystemMouseCursors.basic
+          : SystemMouseCursors.click,
       onEnter: (_) => setState(() => _hovering = true),
       onExit: (_) => setState(() => _hovering = false),
       child: GestureDetector(
-        onTap: () {},
+        onTap: widget.onTap,
         child: AnimatedDefaultTextStyle(
           duration: const Duration(milliseconds: 150),
           style: TextStyle(
             fontSize: 13,
-            color: _hovering
+            color: _hovering && widget.onTap != null
                 ? AppColors.primaryForeground
                 : const Color(0xCCFFFFFF),
           ),

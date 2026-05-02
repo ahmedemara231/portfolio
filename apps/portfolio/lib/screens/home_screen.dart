@@ -78,7 +78,14 @@ class _HomeScreenState extends State<HomeScreen> {
                     SizedBox(
                         key: _contactKey,
                         child: ContactSection(profile: profile)),
-                    FooterSection(profile: profile),
+                    FooterSection(
+                      profile: profile,
+                      onAbout: () => _scrollToSection(_aboutKey),
+                      onSkills: () => _scrollToSection(_skillsKey),
+                      onProjects: () => _scrollToSection(_projectsKey),
+                      onExperience: () => _scrollToSection(_experienceKey),
+                      onContact: () => _scrollToSection(_contactKey),
+                    ),
                   ],
                 ),
               ),
@@ -87,6 +94,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 left: 0,
                 right: 0,
                 child: HeaderSection(
+                  cvUrl: profile['cvUrl'] as String? ?? '',
                   onAbout: () => _scrollToSection(_aboutKey),
                   onSkills: () => _scrollToSection(_skillsKey),
                   onProjects: () => _scrollToSection(_projectsKey),

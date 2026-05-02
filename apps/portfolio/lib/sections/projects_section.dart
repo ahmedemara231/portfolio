@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:core/core.dart';
 import '../theme/app_colors.dart';
@@ -62,6 +63,8 @@ class ProjectsSection extends StatelessWidget {
                           rating: (p['rating'] as num?)?.toDouble(),
                           codeUrl: p['codeUrl'] as String?,
                           liveUrl: p['liveUrl'] as String?,
+                          googlePlayUrl: p['googlePlayUrl'] as String?,
+                          appStoreUrl: p['appStoreUrl'] as String?,
                           tagColor: p['tagColor'] as String?,
                         ),
                     ],
@@ -85,6 +88,8 @@ class _ProjectCard extends StatefulWidget {
   final double? rating;
   final String? codeUrl;
   final String? liveUrl;
+  final String? googlePlayUrl;
+  final String? appStoreUrl;
   final String? tagColor;
 
   const _ProjectCard({
@@ -96,6 +101,8 @@ class _ProjectCard extends StatefulWidget {
     this.rating,
     this.codeUrl,
     this.liveUrl,
+    this.googlePlayUrl,
+    this.appStoreUrl,
     this.tagColor,
   });
 
@@ -105,6 +112,14 @@ class _ProjectCard extends StatefulWidget {
 
 class _ProjectCardState extends State<_ProjectCard> {
   bool _hovering = false;
+
+  bool get _hasAnyLink {
+    bool nonEmpty(String? s) => s != null && s.isNotEmpty;
+    return nonEmpty(widget.codeUrl) ||
+        nonEmpty(widget.googlePlayUrl) ||
+        nonEmpty(widget.appStoreUrl) ||
+        nonEmpty(widget.liveUrl);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -165,31 +180,7 @@ class _ProjectCardState extends State<_ProjectCard> {
                           ),
                         ),
                       ),
-                      if (widget.codeUrl != null || widget.liveUrl != null)
-                        Positioned(
-                          top: 12,
-                          right: 12,
-                          child: Row(
-                            children: [
-                              if (widget.codeUrl != null &&
-                                  widget.codeUrl!.isNotEmpty) ...[
-                                _ImageActionButton(
-                                    icon: Icons.code,
-                                    onTap: () => launchUrl(
-                                        Uri.parse(widget.codeUrl!))),
-                              ],
-                              if (widget.codeUrl != null &&
-                                  widget.liveUrl != null)
-                                const SizedBox(width: 8),
-                              if (widget.liveUrl != null &&
-                                  widget.liveUrl!.isNotEmpty)
-                                _ImageActionButton(
-                                    icon: Icons.open_in_new,
-                                    onTap: () => launchUrl(
-                                        Uri.parse(widget.liveUrl!))),
-                            ],
-                          ),
-                        ),
+                      if (_hasAnyLink) _OverlayActions(card: widget),
                     ],
                   ),
                 ),
@@ -274,11 +265,70 @@ class _ProjectCardState extends State<_ProjectCard> {
   }
 }
 
-class _ImageActionButton extends StatefulWidget {
-  final IconData icon;
-  final VoidCallback onTap;
+class _OverlayActions extends StatelessWidget {
+  final _ProjectCard card;
+  const _OverlayActions({required this.card});
 
-  const _ImageActionButton({required this.icon, required this.onTap});
+  bool _hasUrl(String? s) => s != null && s.isNotEmpty;
+
+  @override
+  Widget build(BuildContext context) {
+    final actions = <Widget>[];
+
+    void add(Widget w) {
+      if (actions.isNotEmpty) actions.add(const SizedBox(width: 8));
+      actions.add(w);
+    }
+
+    if (_hasUrl(card.codeUrl)) {
+      add(_ImageActionButton(
+        tooltip: 'Source code',
+        onTap: () => launchUrl(Uri.parse(card.codeUrl!)),
+        child: const Icon(Icons.code, size: 16, color: Colors.black),
+      ));
+    }
+    if (_hasUrl(card.googlePlayUrl)) {
+      add(_ImageActionButton(
+        tooltip: 'Get it on Google Play',
+        onTap: () => launchUrl(Uri.parse(card.googlePlayUrl!)),
+        child: const FaIcon(FontAwesomeIcons.googlePlay,
+            size: 14, color: Color(0xFF34A853)),
+      ));
+    }
+    if (_hasUrl(card.appStoreUrl)) {
+      add(_ImageActionButton(
+        tooltip: 'Download on the App Store',
+        onTap: () => launchUrl(Uri.parse(card.appStoreUrl!)),
+        child: const FaIcon(FontAwesomeIcons.appStoreIos,
+            size: 16, color: Colors.black),
+      ));
+    }
+    if (_hasUrl(card.liveUrl)) {
+      add(_ImageActionButton(
+        tooltip: 'Live demo',
+        onTap: () => launchUrl(Uri.parse(card.liveUrl!)),
+        child: const Icon(Icons.open_in_new, size: 16, color: Colors.black),
+      ));
+    }
+
+    return Positioned(
+      top: 12,
+      right: 12,
+      child: Row(children: actions),
+    );
+  }
+}
+
+class _ImageActionButton extends StatefulWidget {
+  final Widget child;
+  final VoidCallback onTap;
+  final String? tooltip;
+
+  const _ImageActionButton({
+    required this.child,
+    required this.onTap,
+    this.tooltip,
+  });
 
   @override
   State<_ImageActionButton> createState() => _ImageActionButtonState();
@@ -289,7 +339,7 @@ class _ImageActionButtonState extends State<_ImageActionButton> {
 
   @override
   Widget build(BuildContext context) {
-    return MouseRegion(
+    final button = MouseRegion(
       cursor: SystemMouseCursors.click,
       onEnter: (_) => setState(() => _hovering = true),
       onExit: (_) => setState(() => _hovering = false),
@@ -305,9 +355,12 @@ class _ImageActionButtonState extends State<_ImageActionButton> {
                 : Colors.white.withValues(alpha: 0.9),
             borderRadius: BorderRadius.circular(8),
           ),
-          child: Icon(widget.icon, size: 16, color: Colors.black),
+          child: Center(child: widget.child),
         ),
       ),
     );
+    return widget.tooltip == null
+        ? button
+        : Tooltip(message: widget.tooltip!, child: button);
   }
 }

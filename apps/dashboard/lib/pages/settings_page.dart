@@ -17,6 +17,8 @@ class _SettingsPageState extends State<SettingsPage> {
   final _heroDescCtrl = TextEditingController();
   final _heroImageCtrl = TextEditingController();
   final _cvUrlCtrl = TextEditingController();
+  final _availabilityNoteCtrl = TextEditingController();
+  String _availabilityStatus = '';
   final _emailCtrl = TextEditingController();
   final _phoneCtrl = TextEditingController();
   final _locationCtrl = TextEditingController();
@@ -35,6 +37,7 @@ class _SettingsPageState extends State<SettingsPage> {
     _heroDescCtrl.dispose();
     _heroImageCtrl.dispose();
     _cvUrlCtrl.dispose();
+    _availabilityNoteCtrl.dispose();
     _emailCtrl.dispose();
     _phoneCtrl.dispose();
     _locationCtrl.dispose();
@@ -54,6 +57,8 @@ class _SettingsPageState extends State<SettingsPage> {
     _heroDescCtrl.text = data['heroDescription'] ?? '';
     _heroImageCtrl.text = data['heroImage'] ?? '';
     _cvUrlCtrl.text = data['cvUrl'] ?? '';
+    _availabilityStatus = data['availabilityStatus'] ?? '';
+    _availabilityNoteCtrl.text = data['availabilityNote'] ?? '';
     _emailCtrl.text = data['contactEmail'] ?? '';
     _phoneCtrl.text = data['contactPhone'] ?? '';
     _locationCtrl.text = data['contactLocation'] ?? '';
@@ -73,6 +78,8 @@ class _SettingsPageState extends State<SettingsPage> {
         'heroDescription': _heroDescCtrl.text.trim(),
         'heroImage': _heroImageCtrl.text.trim(),
         'cvUrl': _cvUrlCtrl.text.trim(),
+        'availabilityStatus': _availabilityStatus,
+        'availabilityNote': _availabilityNoteCtrl.text.trim(),
         'contactEmail': _emailCtrl.text.trim(),
         'contactPhone': _phoneCtrl.text.trim(),
         'contactLocation': _locationCtrl.text.trim(),
@@ -142,6 +149,10 @@ class _SettingsPageState extends State<SettingsPage> {
                   );
                 },
               ),
+              const SizedBox(height: 24),
+
+              // Availability
+              _availabilityCard(),
               const SizedBox(height: 24),
 
               // Contact Info
@@ -223,6 +234,59 @@ class _SettingsPageState extends State<SettingsPage> {
           _field('Bio / Hero Description', _heroDescCtrl, 'Describe yourself...', maxLines: 3),
           const SizedBox(height: 16),
           _field('CV URL', _cvUrlCtrl, 'https://...'),
+        ],
+      ),
+    );
+  }
+
+  Widget _availabilityCard() {
+    const options = [
+      ('', 'Hide'),
+      ('available', 'Available'),
+      ('open', 'Open to opportunities'),
+      ('unavailable', 'Currently engaged'),
+    ];
+    return _card(
+      'Availability',
+      Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'Shown as a colored pill at the top of your hero section. Recruiters use this to pre-screen.',
+            style: TextStyle(
+                fontSize: 12, color: DashboardColors.mutedForeground),
+          ),
+          const SizedBox(height: 12),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: options.map((o) {
+              final selected = _availabilityStatus == o.$1;
+              return ChoiceChip(
+                label: Text(o.$2),
+                selected: selected,
+                onSelected: (_) =>
+                    setState(() => _availabilityStatus = o.$1),
+                selectedColor:
+                    DashboardColors.primary.withValues(alpha: 0.1),
+                labelStyle: TextStyle(
+                  color: selected ? DashboardColors.primary : null,
+                  fontWeight: selected ? FontWeight.w600 : null,
+                ),
+                side: BorderSide(
+                  color: selected
+                      ? DashboardColors.primary
+                      : DashboardColors.border,
+                ),
+              );
+            }).toList(),
+          ),
+          const SizedBox(height: 16),
+          _field(
+            'Custom note (optional)',
+            _availabilityNoteCtrl,
+            'e.g. Open to remote Flutter roles — EU/UAE',
+          ),
         ],
       ),
     );

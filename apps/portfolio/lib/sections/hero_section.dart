@@ -68,10 +68,22 @@ class _HeroContent extends StatelessWidget {
     final heroDescription = profile['heroDescription'] as String? ?? '';
     final cvUrl = profile['cvUrl'] as String?;
     final contactEmail = profile['contactEmail'] as String?;
+    final availabilityStatus = profile['availabilityStatus'] as String? ?? '';
+    final availabilityNote = profile['availabilityNote'] as String? ?? '';
+    final availability = _AvailabilityPalette.from(availabilityStatus);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        if (availability != null) ...[
+          _AvailabilityPill(
+            palette: availability,
+            note: availabilityNote.isEmpty
+                ? availability.defaultLabel
+                : availabilityNote,
+          ),
+          const SizedBox(height: 16),
+        ],
         if (badge != null && badge.isNotEmpty)
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -356,5 +368,92 @@ class _StatDivider extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(width: 1, height: 40, color: AppColors.border);
+  }
+}
+
+class _AvailabilityPalette {
+  final Color background;
+  final Color foreground;
+  final Color dot;
+  final String defaultLabel;
+
+  const _AvailabilityPalette({
+    required this.background,
+    required this.foreground,
+    required this.dot,
+    required this.defaultLabel,
+  });
+
+  static _AvailabilityPalette? from(String status) {
+    switch (status) {
+      case 'available':
+        return const _AvailabilityPalette(
+          background: Color(0x1A22C55E),
+          foreground: Color(0xFF15803D),
+          dot: Color(0xFF22C55E),
+          defaultLabel: 'Available for work',
+        );
+      case 'open':
+        return const _AvailabilityPalette(
+          background: Color(0x1AEAB308),
+          foreground: Color(0xFF854D0E),
+          dot: Color(0xFFEAB308),
+          defaultLabel: 'Open to opportunities',
+        );
+      case 'unavailable':
+        return const _AvailabilityPalette(
+          background: Color(0x1A6B7280),
+          foreground: Color(0xFF374151),
+          dot: Color(0xFF6B7280),
+          defaultLabel: 'Currently engaged',
+        );
+      default:
+        return null;
+    }
+  }
+}
+
+class _AvailabilityPill extends StatelessWidget {
+  final _AvailabilityPalette palette;
+  final String note;
+  const _AvailabilityPill({required this.palette, required this.note});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      decoration: BoxDecoration(
+        color: palette.background,
+        borderRadius: BorderRadius.circular(999),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            width: 8,
+            height: 8,
+            decoration: BoxDecoration(
+              color: palette.dot,
+              shape: BoxShape.circle,
+              boxShadow: [
+                BoxShadow(
+                  color: palette.dot.withValues(alpha: 0.5),
+                  blurRadius: 6,
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(width: 8),
+          Text(
+            note,
+            style: TextStyle(
+              fontSize: 13,
+              fontWeight: FontWeight.w600,
+              color: palette.foreground,
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }

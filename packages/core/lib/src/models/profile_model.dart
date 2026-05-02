@@ -5,6 +5,8 @@ class ProfileModel {
   final String heroDescription;
   final String heroImage;
   final String cvUrl;
+  final String availabilityStatus; // '' | 'available' | 'open' | 'unavailable'
+  final String availabilityNote;
   final String aboutTitle;
   final String aboutDescription;
   final String skillsTitle;
@@ -29,6 +31,8 @@ class ProfileModel {
     this.heroDescription = '',
     this.heroImage = '',
     this.cvUrl = '',
+    this.availabilityStatus = '',
+    this.availabilityNote = '',
     this.aboutTitle = '',
     this.aboutDescription = '',
     this.skillsTitle = '',
@@ -55,6 +59,8 @@ class ProfileModel {
       heroDescription: map['heroDescription'] ?? '',
       heroImage: map['heroImage'] ?? '',
       cvUrl: map['cvUrl'] ?? '',
+      availabilityStatus: map['availabilityStatus'] ?? '',
+      availabilityNote: map['availabilityNote'] ?? '',
       aboutTitle: map['aboutTitle'] ?? '',
       aboutDescription: map['aboutDescription'] ?? '',
       skillsTitle: map['skillsTitle'] ?? '',
@@ -82,6 +88,8 @@ class ProfileModel {
       'heroDescription': heroDescription,
       'heroImage': heroImage,
       'cvUrl': cvUrl,
+      'availabilityStatus': availabilityStatus,
+      'availabilityNote': availabilityNote,
       'aboutTitle': aboutTitle,
       'aboutDescription': aboutDescription,
       'skillsTitle': skillsTitle,
@@ -108,6 +116,8 @@ class ProfileModel {
     String? heroDescription,
     String? heroImage,
     String? cvUrl,
+    String? availabilityStatus,
+    String? availabilityNote,
     String? aboutTitle,
     String? aboutDescription,
     String? skillsTitle,
@@ -132,6 +142,8 @@ class ProfileModel {
       heroDescription: heroDescription ?? this.heroDescription,
       heroImage: heroImage ?? this.heroImage,
       cvUrl: cvUrl ?? this.cvUrl,
+      availabilityStatus: availabilityStatus ?? this.availabilityStatus,
+      availabilityNote: availabilityNote ?? this.availabilityNote,
       aboutTitle: aboutTitle ?? this.aboutTitle,
       aboutDescription: aboutDescription ?? this.aboutDescription,
       skillsTitle: skillsTitle ?? this.skillsTitle,
