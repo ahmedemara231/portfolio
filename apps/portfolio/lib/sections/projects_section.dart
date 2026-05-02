@@ -254,7 +254,136 @@ class _ProjectCardState extends State<_ProjectCard> {
                         ],
                       ),
                     ],
+                    if (_hasAnyLink) ...[
+                      const SizedBox(height: 16),
+                      _StoreButtonsRow(card: widget),
+                    ],
                   ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _StoreButtonsRow extends StatelessWidget {
+  final _ProjectCard card;
+  const _StoreButtonsRow({required this.card});
+
+  bool _has(String? s) => s != null && s.isNotEmpty;
+
+  @override
+  Widget build(BuildContext context) {
+    final children = <Widget>[];
+
+    if (_has(card.googlePlayUrl)) {
+      children.add(_StoreButton(
+        label: 'Google Play',
+        background: const Color(0xFF01875F),
+        foreground: Colors.white,
+        icon: const FaIcon(FontAwesomeIcons.googlePlay,
+            size: 14, color: Colors.white),
+        onTap: () => launchUrl(Uri.parse(card.googlePlayUrl!)),
+      ));
+    }
+    if (_has(card.appStoreUrl)) {
+      children.add(_StoreButton(
+        label: 'App Store',
+        background: Colors.black,
+        foreground: Colors.white,
+        icon: const FaIcon(FontAwesomeIcons.appStoreIos,
+            size: 16, color: Colors.white),
+        onTap: () => launchUrl(Uri.parse(card.appStoreUrl!)),
+      ));
+    }
+    if (_has(card.codeUrl)) {
+      children.add(_StoreButton(
+        label: 'Source',
+        background: AppColors.accent,
+        foreground: AppColors.foreground,
+        icon: const Icon(Icons.code,
+            size: 16, color: AppColors.foreground),
+        onTap: () => launchUrl(Uri.parse(card.codeUrl!)),
+      ));
+    }
+    if (_has(card.liveUrl)) {
+      children.add(_StoreButton(
+        label: 'Live',
+        background: AppColors.accent,
+        foreground: AppColors.foreground,
+        icon: const Icon(Icons.open_in_new,
+            size: 14, color: AppColors.foreground),
+        onTap: () => launchUrl(Uri.parse(card.liveUrl!)),
+      ));
+    }
+
+    return Wrap(spacing: 8, runSpacing: 8, children: children);
+  }
+}
+
+class _StoreButton extends StatefulWidget {
+  final String label;
+  final Color background;
+  final Color foreground;
+  final Widget icon;
+  final VoidCallback onTap;
+
+  const _StoreButton({
+    required this.label,
+    required this.background,
+    required this.foreground,
+    required this.icon,
+    required this.onTap,
+  });
+
+  @override
+  State<_StoreButton> createState() => _StoreButtonState();
+}
+
+class _StoreButtonState extends State<_StoreButton> {
+  bool _hovering = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return MouseRegion(
+      cursor: SystemMouseCursors.click,
+      onEnter: (_) => setState(() => _hovering = true),
+      onExit: (_) => setState(() => _hovering = false),
+      child: GestureDetector(
+        onTap: widget.onTap,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 150),
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+          decoration: BoxDecoration(
+            color: _hovering
+                ? Color.lerp(widget.background, Colors.white, 0.1) ??
+                    widget.background
+                : widget.background,
+            borderRadius: BorderRadius.circular(8),
+            boxShadow: _hovering
+                ? [
+                    BoxShadow(
+                      color: widget.background.withValues(alpha: 0.25),
+                      blurRadius: 10,
+                      offset: const Offset(0, 3),
+                    ),
+                  ]
+                : null,
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              widget.icon,
+              const SizedBox(width: 8),
+              Text(
+                widget.label,
+                style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                  color: widget.foreground,
                 ),
               ),
             ],
