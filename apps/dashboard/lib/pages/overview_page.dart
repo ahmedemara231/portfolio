@@ -1,9 +1,26 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:core/core.dart';
 import '../theme/dashboard_theme.dart';
 
+// Tab indices in DashboardShell — keep in sync with `_navItems`.
+const int _kProjectsTab = 1;
+const int _kSkillsTab = 2;
+const int _kExperienceTab = 3;
+const int _kSettingsTab = 4;
+
+double _parseDownloads(String dl) {
+  final cleaned = dl.replaceAll(RegExp(r'[^0-9.]'), '');
+  final num = double.tryParse(cleaned) ?? 0;
+  final upper = dl.toUpperCase();
+  if (upper.contains('M')) return num * 1000000;
+  if (upper.contains('K')) return num * 1000;
+  return num;
+}
+
 class OverviewPage extends StatelessWidget {
-  const OverviewPage({super.key});
+  final ValueChanged<int>? onNavigate;
+  const OverviewPage({super.key, this.onNavigate});
 
   @override
   Widget build(BuildContext context) {
@@ -56,7 +73,7 @@ class OverviewPage extends StatelessWidget {
                   children: [
                     Expanded(child: _RecentActivity()),
                     const SizedBox(width: 24),
-                    Expanded(child: _QuickActions()),
+                    Expanded(child: _QuickActions(onNavigate: onNavigate)),
                   ],
                 );
               }
@@ -64,7 +81,7 @@ class OverviewPage extends StatelessWidget {
                 children: [
                   _RecentActivity(),
                   const SizedBox(height: 24),
-                  _QuickActions(),
+                  _QuickActions(onNavigate: onNavigate),
                 ],
               );
             },
@@ -312,8 +329,17 @@ class _ProjectPerformance extends StatelessWidget {
     return StreamBuilder<List<MapEntry<String, Map<String, dynamic>>>>(
       stream: FirestoreService.collectionStreamWithIds('projects'),
       builder: (context, snap) {
-        final projects = snap.data ?? [];
+        final projects = List<MapEntry<String, Map<String, dynamic>>>.from(
+            snap.data ?? const []);
+        projects.sort((a, b) {
+          final da = _parseDownloads((a.value['downloads'] ?? '').toString());
+          final db = _parseDownloads((b.value['downloads'] ?? '').toString());
+          return db.compareTo(da);
+        });
         final top5 = projects.take(5).toList();
+        final maxDownloads = top5.isEmpty
+            ? 0.0
+            : _parseDownloads((top5.first.value['downloads'] ?? '').toString());
 
         return Container(
           padding: const EdgeInsets.all(24),
@@ -328,10 +354,19 @@ class _ProjectPerformance extends StatelessWidget {
               const Text('Top Projects Performance',
                   style: TextStyle(fontWeight: FontWeight.w600)),
               const SizedBox(height: 24),
+              if (top5.isEmpty)
+                const Padding(
+                  padding: EdgeInsets.symmetric(vertical: 16),
+                  child: Text('No projects yet',
+                      style: TextStyle(
+                          fontSize: 13, color: DashboardColors.mutedForeground)),
+                ),
               ...top5.map((e) {
                 final p = e.value;
                 final title = p['title'] ?? '';
-                final dl = p['downloads'] ?? '0';
+                final dl = (p['downloads'] ?? '').toString();
+                final value = _parseDownloads(dl);
+                final progress = maxDownloads > 0 ? (value / maxDownloads) : 0.0;
                 return Padding(
                   padding: const EdgeInsets.only(bottom: 16),
                   child: Column(
@@ -345,7 +380,7 @@ class _ProjectPerformance extends StatelessWidget {
                                 style: const TextStyle(fontSize: 13),
                                 overflow: TextOverflow.ellipsis),
                           ),
-                          Text(dl,
+                          Text(dl.isEmpty ? '-' : dl,
                               style: const TextStyle(
                                   fontSize: 13, fontWeight: FontWeight.w600)),
                         ],
@@ -354,7 +389,7 @@ class _ProjectPerformance extends StatelessWidget {
                       ClipRRect(
                         borderRadius: BorderRadius.circular(4),
                         child: LinearProgressIndicator(
-                          value: _parseDownloads(dl) / 100000,
+                          value: progress.clamp(0.0, 1.0),
                           minHeight: 8,
                           backgroundColor: DashboardColors.accent,
                           valueColor: const AlwaysStoppedAnimation(DashboardColors.primary),
@@ -370,26 +405,37 @@ class _ProjectPerformance extends StatelessWidget {
       },
     );
   }
-
-  double _parseDownloads(String dl) {
-    final cleaned = dl.replaceAll(RegExp(r'[^0-9.]'), '');
-    final num = double.tryParse(cleaned) ?? 0;
-    if (dl.contains('K')) return num * 1000;
-    return num;
-  }
 }
 
 class _RecentActivity extends StatelessWidget {
+  String _capitalize(String s) =>
+      s.isEmpty ? s : '${s[0].toUpperCase()}${s.substring(1)}';
+
+  String _relativeTime(DateTime when) {
+    final diff = DateTime.now().difference(when);
+    if (diff.inSeconds < 60) return 'just now';
+    if (diff.inMinutes < 60) {
+      final m = diff.inMinutes;
+      return '$m ${m == 1 ? 'minute' : 'minutes'} ago';
+    }
+    if (diff.inHours < 24) {
+      final h = diff.inHours;
+      return '$h ${h == 1 ? 'hour' : 'hours'} ago';
+    }
+    if (diff.inDays < 7) {
+      final d = diff.inDays;
+      return '$d ${d == 1 ? 'day' : 'days'} ago';
+    }
+    if (diff.inDays < 30) {
+      final w = diff.inDays ~/ 7;
+      return '$w ${w == 1 ? 'week' : 'weeks'} ago';
+    }
+    final mo = diff.inDays ~/ 30;
+    return '$mo ${mo == 1 ? 'month' : 'months'} ago';
+  }
+
   @override
   Widget build(BuildContext context) {
-    final activities = [
-      ('Updated project', 'E-Commerce App', '2 hours ago'),
-      ('Added new skill', 'GraphQL', '5 hours ago'),
-      ('Published project', 'Task Management', '1 day ago'),
-      ('Updated experience', 'Senior Flutter Developer', '2 days ago'),
-      ('Received review', 'Food Delivery', '3 days ago'),
-    ];
-
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
@@ -405,61 +451,116 @@ class _RecentActivity extends StatelessWidget {
             children: [
               const Text('Recent Activity',
                   style: TextStyle(fontWeight: FontWeight.w600)),
-              Icon(Icons.timeline, size: 20, color: DashboardColors.mutedForeground),
+              const Icon(Icons.timeline, size: 20, color: DashboardColors.mutedForeground),
             ],
           ),
           const SizedBox(height: 16),
-          ...activities.map((a) => Padding(
-                padding: const EdgeInsets.only(bottom: 16),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Container(
-                      width: 8,
-                      height: 8,
-                      margin: const EdgeInsets.only(top: 6, right: 12),
-                      decoration: const BoxDecoration(
-                        color: DashboardColors.primary,
-                        shape: BoxShape.circle,
-                      ),
+          StreamBuilder<List<Map<String, dynamic>>>(
+            stream: FirestoreService.recentActivityStream(limit: 5),
+            builder: (context, snap) {
+              if (snap.connectionState == ConnectionState.waiting) {
+                return const Padding(
+                  padding: EdgeInsets.symmetric(vertical: 16),
+                  child: Center(
+                    child: SizedBox(
+                      width: 20, height: 20,
+                      child: CircularProgressIndicator(strokeWidth: 2),
                     ),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text.rich(TextSpan(children: [
-                            TextSpan(
-                                text: a.$1,
-                                style: const TextStyle(fontWeight: FontWeight.w500, fontSize: 13)),
-                            TextSpan(
-                                text: '  ${a.$2}',
-                                style: const TextStyle(
-                                    color: DashboardColors.mutedForeground, fontSize: 13)),
-                          ])),
-                          const SizedBox(height: 2),
-                          Text(a.$3,
-                              style: const TextStyle(
-                                  fontSize: 12, color: DashboardColors.mutedForeground)),
-                        ],
-                      ),
+                  ),
+                );
+              }
+              final activities = snap.data ?? [];
+              if (activities.isEmpty) {
+                return const Padding(
+                  padding: EdgeInsets.symmetric(vertical: 16),
+                  child: Text('No recent activity',
+                      style: TextStyle(
+                          fontSize: 13, color: DashboardColors.mutedForeground)),
+                );
+              }
+              return Column(
+                children: activities.map((a) {
+                  final action = (a['action'] ?? '').toString();
+                  final entity = (a['entity'] ?? '').toString();
+                  final target = (a['target'] ?? '').toString();
+                  final ts = a['createdAt'];
+                  final when = ts is Timestamp ? ts.toDate() : null;
+                  final headline = '${_capitalize(action)} $entity'.trim();
+
+                  return Padding(
+                    padding: const EdgeInsets.only(bottom: 16),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Container(
+                          width: 8,
+                          height: 8,
+                          margin: const EdgeInsets.only(top: 6, right: 12),
+                          decoration: const BoxDecoration(
+                            color: DashboardColors.primary,
+                            shape: BoxShape.circle,
+                          ),
+                        ),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text.rich(TextSpan(children: [
+                                TextSpan(
+                                    text: headline,
+                                    style: const TextStyle(
+                                        fontWeight: FontWeight.w500, fontSize: 13)),
+                                if (target.isNotEmpty)
+                                  TextSpan(
+                                      text: '  $target',
+                                      style: const TextStyle(
+                                          color: DashboardColors.mutedForeground,
+                                          fontSize: 13)),
+                              ])),
+                              const SizedBox(height: 2),
+                              Text(when == null ? 'just now' : _relativeTime(when),
+                                  style: const TextStyle(
+                                      fontSize: 12,
+                                      color: DashboardColors.mutedForeground)),
+                            ],
+                          ),
+                        ),
+                      ],
                     ),
-                  ],
-                ),
-              )),
+                  );
+                }).toList(),
+              );
+            },
+          ),
         ],
       ),
     );
   }
 }
 
+class _QuickAction {
+  final IconData icon;
+  final String title;
+  final String subtitle;
+  final int tabIndex;
+  const _QuickAction(this.icon, this.title, this.subtitle, this.tabIndex);
+}
+
 class _QuickActions extends StatelessWidget {
+  final ValueChanged<int>? onNavigate;
+  const _QuickActions({this.onNavigate});
+
   @override
   Widget build(BuildContext context) {
-    final actions = [
-      (Icons.folder_outlined, 'Add Project', 'Create new project'),
-      (Icons.people_outline, 'Add Experience', 'Update work history'),
-      (Icons.star_outline, 'Update Skills', 'Add new skills'),
-      (Icons.message_outlined, 'View Messages', '3 new messages'),
+    const actions = [
+      _QuickAction(Icons.folder_outlined, 'Add Project',
+          'Create new project', _kProjectsTab),
+      _QuickAction(Icons.work_outline, 'Add Experience',
+          'Update work history', _kExperienceTab),
+      _QuickAction(Icons.star_outline, 'Update Skills',
+          'Add new skills', _kSkillsTab),
+      _QuickAction(Icons.settings_outlined, 'Settings',
+          'Manage profile & site', _kSettingsTab),
     ];
 
     return Container(
@@ -490,7 +591,7 @@ class _QuickActions extends StatelessWidget {
                 ),
                 child: InkWell(
                   borderRadius: BorderRadius.circular(8),
-                  onTap: () {},
+                  onTap: () => onNavigate?.call(a.tabIndex),
                   hoverColor: DashboardColors.accent,
                   child: Padding(
                     padding: const EdgeInsets.all(16),
@@ -498,12 +599,12 @@ class _QuickActions extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(a.$1, color: DashboardColors.primary),
+                        Icon(a.icon, color: DashboardColors.primary),
                         const SizedBox(height: 8),
-                        Text(a.$2,
+                        Text(a.title,
                             style: const TextStyle(
                                 fontWeight: FontWeight.w500, fontSize: 13)),
-                        Text(a.$3,
+                        Text(a.subtitle,
                             style: const TextStyle(
                                 fontSize: 12, color: DashboardColors.mutedForeground)),
                       ],

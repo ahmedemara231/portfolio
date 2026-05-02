@@ -8,6 +8,8 @@ class ProjectModel {
   final double rating;
   final String codeUrl;
   final String liveUrl;
+  final String googlePlayUrl;
+  final String appStoreUrl;
   final String tagColor;
   final int order;
 
@@ -21,6 +23,8 @@ class ProjectModel {
     this.rating = 0,
     this.codeUrl = '',
     this.liveUrl = '',
+    this.googlePlayUrl = '',
+    this.appStoreUrl = '',
     this.tagColor = '',
     this.order = 0,
   });
@@ -36,6 +40,8 @@ class ProjectModel {
       rating: (map['rating'] ?? 0).toDouble(),
       codeUrl: map['codeUrl'] ?? '',
       liveUrl: map['liveUrl'] ?? '',
+      googlePlayUrl: map['googlePlayUrl'] ?? '',
+      appStoreUrl: map['appStoreUrl'] ?? '',
       tagColor: map['tagColor'] ?? '',
       order: map['order'] ?? 0,
     );
@@ -51,6 +57,8 @@ class ProjectModel {
       'rating': rating,
       'codeUrl': codeUrl,
       'liveUrl': liveUrl,
+      'googlePlayUrl': googlePlayUrl,
+      'appStoreUrl': appStoreUrl,
       'tagColor': tagColor,
       'order': order,
     };
@@ -66,6 +74,8 @@ class ProjectModel {
     double? rating,
     String? codeUrl,
     String? liveUrl,
+    String? googlePlayUrl,
+    String? appStoreUrl,
     String? tagColor,
     int? order,
   }) {
@@ -79,6 +89,8 @@ class ProjectModel {
       rating: rating ?? this.rating,
       codeUrl: codeUrl ?? this.codeUrl,
       liveUrl: liveUrl ?? this.liveUrl,
+      googlePlayUrl: googlePlayUrl ?? this.googlePlayUrl,
+      appStoreUrl: appStoreUrl ?? this.appStoreUrl,
       tagColor: tagColor ?? this.tagColor,
       order: order ?? this.order,
     );

@@ -197,6 +197,11 @@ class _TechnicalSkillsList extends StatelessWidget {
                             onDelete: () async {
                               try {
                                 await FirestoreService.deleteDocument('technical_skills', id);
+                                await FirestoreService.logActivity(
+                                  action: 'deleted',
+                                  entity: 'technical skill',
+                                  target: d['name'] ?? '',
+                                );
                               } catch (e) {
                                 if (context.mounted) {
                                   ScaffoldMessenger.of(context).showSnackBar(
@@ -289,6 +294,11 @@ class _SoftSkillsList extends StatelessWidget {
                             onDelete: () async {
                               try {
                                 await FirestoreService.deleteDocument('soft_skills', id);
+                                await FirestoreService.logActivity(
+                                  action: 'deleted',
+                                  entity: 'soft skill',
+                                  target: d['name'] ?? '',
+                                );
                               } catch (e) {
                                 if (context.mounted) {
                                   ScaffoldMessenger.of(context).showSnackBar(
@@ -458,18 +468,23 @@ class _TechSkillModalState extends State<_TechSkillModal> {
   Future<void> _save() async {
     if (_nameCtrl.text.trim().isEmpty) return;
     try {
+      final name = _nameCtrl.text.trim();
       final map = {
-        'name': _nameCtrl.text.trim(),
+        'name': name,
         'icon': _iconCtrl.text.trim(),
         'level': _level,
         'order': widget.data?['order'] ?? 0,
       };
       if (isEditing) {
         await FirestoreService.updateDocument('technical_skills', widget.docId!, map);
+        await FirestoreService.logActivity(
+          action: 'updated', entity: 'technical skill', target: name);
       } else {
         final count = await FirestoreService.collectionCount('technical_skills');
         map['order'] = count;
         await FirestoreService.addDocument('technical_skills', map);
+        await FirestoreService.logActivity(
+          action: 'added', entity: 'technical skill', target: name);
       }
       if (mounted) Navigator.pop(context);
     } catch (e) {
@@ -617,18 +632,23 @@ class _SoftSkillModalState extends State<_SoftSkillModal> {
   Future<void> _save() async {
     if (_nameCtrl.text.trim().isEmpty) return;
     try {
+      final name = _nameCtrl.text.trim();
       final map = {
-        'name': _nameCtrl.text.trim(),
+        'name': name,
         'description': _descCtrl.text.trim(),
         'icon': _iconCtrl.text.trim(),
         'order': widget.data?['order'] ?? 0,
       };
       if (isEditing) {
         await FirestoreService.updateDocument('soft_skills', widget.docId!, map);
+        await FirestoreService.logActivity(
+          action: 'updated', entity: 'soft skill', target: name);
       } else {
         final count = await FirestoreService.collectionCount('soft_skills');
         map['order'] = count;
         await FirestoreService.addDocument('soft_skills', map);
+        await FirestoreService.logActivity(
+          action: 'added', entity: 'soft skill', target: name);
       }
       if (mounted) Navigator.pop(context);
     } catch (e) {

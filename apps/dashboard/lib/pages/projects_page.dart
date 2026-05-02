@@ -264,6 +264,11 @@ class _ProjectCard extends StatelessWidget {
               Navigator.pop(ctx);
               try {
                 await FirestoreService.deleteDocument('projects', id);
+                await FirestoreService.logActivity(
+                  action: 'deleted',
+                  entity: 'project',
+                  target: data['title'] ?? '',
+                );
               } catch (e) {
                 if (context.mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(
@@ -296,7 +301,8 @@ class _ProjectFormModalState extends State<_ProjectFormModal> {
   late final TextEditingController _downloadsCtrl;
   late final TextEditingController _ratingCtrl;
   late final TextEditingController _codeUrlCtrl;
-  late final TextEditingController _liveUrlCtrl;
+  late final TextEditingController _googlePlayUrlCtrl;
+  late final TextEditingController _appStoreUrlCtrl;
   late final TextEditingController _imageCtrl;
   late final TextEditingController _tagCtrl;
   late List<String> _tags;
@@ -314,7 +320,8 @@ class _ProjectFormModalState extends State<_ProjectFormModal> {
     _ratingCtrl = TextEditingController(
         text: (d['rating'] ?? 0).toDouble() > 0 ? d['rating'].toString() : '');
     _codeUrlCtrl = TextEditingController(text: d['codeUrl'] ?? '');
-    _liveUrlCtrl = TextEditingController(text: d['liveUrl'] ?? '');
+    _googlePlayUrlCtrl = TextEditingController(text: d['googlePlayUrl'] ?? '');
+    _appStoreUrlCtrl = TextEditingController(text: d['appStoreUrl'] ?? '');
     _imageCtrl = TextEditingController(text: d['image'] ?? '');
     _tagCtrl = TextEditingController();
     _tags = List<String>.from(d['tags'] ?? []);
@@ -328,7 +335,8 @@ class _ProjectFormModalState extends State<_ProjectFormModal> {
     _downloadsCtrl.dispose();
     _ratingCtrl.dispose();
     _codeUrlCtrl.dispose();
-    _liveUrlCtrl.dispose();
+    _googlePlayUrlCtrl.dispose();
+    _appStoreUrlCtrl.dispose();
     _imageCtrl.dispose();
     _tagCtrl.dispose();
     super.dispose();
@@ -346,13 +354,15 @@ class _ProjectFormModalState extends State<_ProjectFormModal> {
     if (_titleCtrl.text.trim().isEmpty || _saving) return;
     setState(() => _saving = true);
     try {
+      final title = _titleCtrl.text.trim();
       final map = {
-        'title': _titleCtrl.text.trim(),
+        'title': title,
         'description': _descCtrl.text.trim(),
         'downloads': _downloadsCtrl.text.trim(),
         'rating': double.tryParse(_ratingCtrl.text) ?? 0,
         'codeUrl': _codeUrlCtrl.text.trim(),
-        'liveUrl': _liveUrlCtrl.text.trim(),
+        'googlePlayUrl': _googlePlayUrlCtrl.text.trim(),
+        'appStoreUrl': _appStoreUrlCtrl.text.trim(),
         'image': _imageCtrl.text.trim(),
         'tags': _tags,
         'tagColor': '',
@@ -360,10 +370,14 @@ class _ProjectFormModalState extends State<_ProjectFormModal> {
       };
       if (isEditing) {
         await FirestoreService.updateDocument('projects', widget.docId!, map);
+        await FirestoreService.logActivity(
+          action: 'updated', entity: 'project', target: title);
       } else {
         final count = await FirestoreService.collectionCount('projects');
         map['order'] = count;
         await FirestoreService.addDocument('projects', map);
+        await FirestoreService.logActivity(
+          action: 'added', entity: 'project', target: title);
       }
       if (mounted) Navigator.pop(context);
     } catch (e) {
@@ -489,15 +503,20 @@ class _ProjectFormModalState extends State<_ProjectFormModal> {
                       color: DashboardColors.mutedForeground,
                       letterSpacing: 1)),
               const SizedBox(height: 12),
+              _label('Code URL'),
+              TextField(controller: _codeUrlCtrl,
+                  decoration: const InputDecoration(hintText: 'https://github.com/...')),
+              const SizedBox(height: 16),
               Row(
                 children: [
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        _label('Code URL'),
-                        TextField(controller: _codeUrlCtrl,
-                            decoration: const InputDecoration(hintText: 'https://github.com/...')),
+                        _label('Google Play URL'),
+                        TextField(controller: _googlePlayUrlCtrl,
+                            decoration: const InputDecoration(
+                                hintText: 'https://play.google.com/store/apps/...')),
                       ],
                     ),
                   ),
@@ -506,9 +525,10 @@ class _ProjectFormModalState extends State<_ProjectFormModal> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        _label('Live URL'),
-                        TextField(controller: _liveUrlCtrl,
-                            decoration: const InputDecoration(hintText: 'https://...')),
+                        _label('App Store URL'),
+                        TextField(controller: _appStoreUrlCtrl,
+                            decoration: const InputDecoration(
+                                hintText: 'https://apps.apple.com/app/...')),
                       ],
                     ),
                   ),

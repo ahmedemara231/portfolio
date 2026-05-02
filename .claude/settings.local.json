@@ -51,7 +51,8 @@
       "Bash(xargs cat:*)",
       "Bash(echo \"exit: $?\")",
       "mcp__vercel__get_project",
-      "mcp__vercel__get_deployment_build_logs"
+      "mcp__vercel__get_deployment_build_logs",
+      "mcp__ide__getDiagnostics"
     ]
   }
 }

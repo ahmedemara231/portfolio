@@ -31,12 +31,19 @@ class _DashboardShellState extends State<DashboardShell> {
   int _selectedIndex = 0;
   bool _sidebarOpen = false;
 
-  static const _pages = <Widget>[
-    OverviewPage(),
-    ProjectsPage(),
-    SkillsPage(),
-    ExperiencePage(),
-    SettingsPage(),
+  void _goTo(int index) {
+    setState(() {
+      _selectedIndex = index;
+      _sidebarOpen = false;
+    });
+  }
+
+  late final List<Widget> _pages = <Widget>[
+    OverviewPage(onNavigate: _goTo),
+    const ProjectsPage(),
+    const SkillsPage(),
+    const ExperiencePage(),
+    const SettingsPage(),
   ];
 
   @override

@@ -56,4 +56,32 @@ class FirestoreService {
     final snap = await _db.collection(collection).count().get();
     return snap.count ?? 0;
   }
+
+  // ── Activity log ──
+
+  static Future<void> logActivity({
+    required String action,
+    required String entity,
+    required String target,
+  }) async {
+    try {
+      await _db.collection('activity').add({
+        'action': action,
+        'entity': entity,
+        'target': target,
+        'createdAt': FieldValue.serverTimestamp(),
+      });
+    } catch (_) {
+      // best-effort logging — never block the calling write
+    }
+  }
+
+  static Stream<List<Map<String, dynamic>>> recentActivityStream({int limit = 5}) {
+    return _db
+        .collection('activity')
+        .orderBy('createdAt', descending: true)
+        .limit(limit)
+        .snapshots()
+        .map((snap) => snap.docs.map((d) => d.data()).toList());
+  }
 }

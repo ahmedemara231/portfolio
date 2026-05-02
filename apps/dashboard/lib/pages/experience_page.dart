@@ -224,6 +224,11 @@ class _ExperienceCard extends StatelessWidget {
               Navigator.pop(ctx);
               try {
                 await FirestoreService.deleteDocument('experiences', id);
+                await FirestoreService.logActivity(
+                  action: 'deleted',
+                  entity: 'experience',
+                  target: data['title'] ?? '',
+                );
               } catch (e) {
                 if (context.mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(
@@ -371,8 +376,9 @@ class _ExperienceFormModalState extends State<_ExperienceFormModal> {
   Future<void> _save() async {
     if (_titleCtrl.text.trim().isEmpty || _companyCtrl.text.trim().isEmpty) return;
     try {
+      final title = _titleCtrl.text.trim();
       final map = {
-        'title': _titleCtrl.text.trim(),
+        'title': title,
         'company': _companyCtrl.text.trim(),
         'location': _locationCtrl.text.trim(),
         'period': _periodCtrl.text.trim(),
@@ -385,10 +391,14 @@ class _ExperienceFormModalState extends State<_ExperienceFormModal> {
       };
       if (isEditing) {
         await FirestoreService.updateDocument('experiences', widget.docId!, map);
+        await FirestoreService.logActivity(
+          action: 'updated', entity: 'experience', target: title);
       } else {
         final count = await FirestoreService.collectionCount('experiences');
         map['order'] = count;
         await FirestoreService.addDocument('experiences', map);
+        await FirestoreService.logActivity(
+          action: 'added', entity: 'experience', target: title);
       }
       if (mounted) Navigator.pop(context);
     } catch (e) {
