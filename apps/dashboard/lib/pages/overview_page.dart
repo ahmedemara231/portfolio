@@ -7,7 +7,8 @@ import '../theme/dashboard_theme.dart';
 const int _kProjectsTab = 1;
 const int _kSkillsTab = 2;
 const int _kExperienceTab = 3;
-const int _kSettingsTab = 4;
+const int _kMessagesTab = 4;
+const int _kSettingsTab = 5;
 
 double _parseDownloads(String dl) {
   final cleaned = dl.replaceAll(RegExp(r'[^0-9.]'), '');
@@ -559,6 +560,8 @@ class _QuickActions extends StatelessWidget {
           'Update work history', _kExperienceTab),
       _QuickAction(Icons.star_outline, 'Update Skills',
           'Add new skills', _kSkillsTab),
+      _QuickAction(Icons.mail_outline, 'View Messages',
+          'Inbox from contact form', _kMessagesTab),
       _QuickAction(Icons.settings_outlined, 'Settings',
           'Manage profile & site', _kSettingsTab),
     ];

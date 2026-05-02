@@ -1,9 +1,11 @@
+import 'package:core/core.dart';
 import 'package:flutter/material.dart';
 import '../theme/dashboard_theme.dart';
 import '../pages/overview_page.dart';
 import '../pages/projects_page.dart';
 import '../pages/skills_page.dart';
 import '../pages/experience_page.dart';
+import '../pages/messages_page.dart';
 import '../pages/settings_page.dart';
 
 class _NavItem {
@@ -17,6 +19,7 @@ const _navItems = [
   _NavItem(Icons.folder_outlined, 'Projects'),
   _NavItem(Icons.star_outline, 'Skills'),
   _NavItem(Icons.work_outline, 'Experience'),
+  _NavItem(Icons.mail_outline, 'Messages'),
   _NavItem(Icons.settings_outlined, 'Settings'),
 ];
 
@@ -43,6 +46,7 @@ class _DashboardShellState extends State<DashboardShell> {
     const ProjectsPage(),
     const SkillsPage(),
     const ExperiencePage(),
+    const MessagesPage(),
     const SettingsPage(),
   ];
 
@@ -158,13 +162,43 @@ class _DashboardShellState extends State<DashboardShell> {
                                       ? DashboardColors.primaryForeground
                                       : DashboardColors.primary),
                               const SizedBox(width: 12),
-                              Text(item.label,
-                                  style: TextStyle(
-                                    color: selected
-                                        ? DashboardColors.primaryForeground
-                                        : DashboardColors.primary,
-                                    fontWeight: FontWeight.w500,
-                                  )),
+                              Expanded(
+                                child: Text(item.label,
+                                    style: TextStyle(
+                                      color: selected
+                                          ? DashboardColors.primaryForeground
+                                          : DashboardColors.primary,
+                                      fontWeight: FontWeight.w500,
+                                    )),
+                              ),
+                              if (item.label == 'Messages')
+                                StreamBuilder<int>(
+                                  stream: FirestoreService.unreadMessagesCountStream(),
+                                  builder: (context, snap) {
+                                    final unread = snap.data ?? 0;
+                                    if (unread == 0) return const SizedBox.shrink();
+                                    return Container(
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 8, vertical: 2),
+                                      decoration: BoxDecoration(
+                                        color: selected
+                                            ? DashboardColors.primaryForeground
+                                            : DashboardColors.primary,
+                                        borderRadius: BorderRadius.circular(999),
+                                      ),
+                                      child: Text(
+                                        '$unread',
+                                        style: TextStyle(
+                                          fontSize: 11,
+                                          fontWeight: FontWeight.w700,
+                                          color: selected
+                                              ? DashboardColors.primary
+                                              : DashboardColors.primaryForeground,
+                                        ),
+                                      ),
+                                    );
+                                  },
+                                ),
                             ],
                           ),
                         ),

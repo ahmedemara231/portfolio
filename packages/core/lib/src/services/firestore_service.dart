@@ -84,4 +84,39 @@ class FirestoreService {
         .snapshots()
         .map((snap) => snap.docs.map((d) => d.data()).toList());
   }
+
+  // ── Contact messages ──
+
+  static Stream<List<MapEntry<String, Map<String, dynamic>>>> messagesStream() {
+    return _db
+        .collection('messages')
+        .orderBy('createdAt', descending: true)
+        .snapshots()
+        .map((snap) =>
+            snap.docs.map((d) => MapEntry(d.id, d.data())).toList());
+  }
+
+  static Stream<int> unreadMessagesCountStream() {
+    return _db
+        .collection('messages')
+        .where('read', isEqualTo: false)
+        .snapshots()
+        .map((snap) => snap.docs.length);
+  }
+
+  static Future<void> markMessageRead(String docId, {bool read = true}) {
+    return _db.collection('messages').doc(docId).update({'read': read});
+  }
+
+  static Future<void> markMessageReplied(String docId) {
+    return _db.collection('messages').doc(docId).update({
+      'replied': true,
+      'repliedAt': FieldValue.serverTimestamp(),
+      'read': true,
+    });
+  }
+
+  static Future<void> deleteMessage(String docId) {
+    return _db.collection('messages').doc(docId).delete();
+  }
 }
