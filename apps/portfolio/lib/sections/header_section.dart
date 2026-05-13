@@ -52,19 +52,10 @@ class _HeaderSectionState extends State<HeaderSection> {
                     // Logo
                     GestureDetector(
                       onTap: () {},
-                      child: const Row(
-                        children: [
-                          Icon(Icons.code, size: 24, color: AppColors.primary),
-                          SizedBox(width: 8),
-                          Text(
-                            'Portfolio',
-                            style: TextStyle(
-                              fontWeight: FontWeight.w600,
-                              fontSize: 16,
-                              color: AppColors.foreground,
-                            ),
-                          ),
-                        ],
+                      child: Image.asset(
+                        'assets/logo.png',
+                        height: 40,
+                        fit: BoxFit.contain,
                       ),
                     ),
                     const Spacer(),

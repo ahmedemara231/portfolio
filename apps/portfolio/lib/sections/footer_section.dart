@@ -81,20 +81,26 @@ class FooterSection extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Row(
-          children: [
-            const Icon(
-                Icons.code, size: 24, color: AppColors.primaryForeground),
-            const SizedBox(width: 8),
-            Text(
-              brand,
-              style: const TextStyle(
-                fontWeight: FontWeight.w600,
-                fontSize: 16,
-                color: AppColors.primaryForeground,
-              ),
-            ),
-          ],
+        Container(
+          padding: const EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            color: AppColors.primaryForeground,
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Image.asset(
+            'assets/logo.png',
+            height: 48,
+            fit: BoxFit.contain,
+          ),
+        ),
+        const SizedBox(height: 12),
+        Text(
+          brand,
+          style: const TextStyle(
+            fontWeight: FontWeight.w600,
+            fontSize: 16,
+            color: AppColors.primaryForeground,
+          ),
         ),
         if (description != null && description.isNotEmpty) ...[
           const SizedBox(height: 12),

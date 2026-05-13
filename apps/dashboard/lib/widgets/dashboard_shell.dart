@@ -56,6 +56,7 @@ class _DashboardShellState extends State<DashboardShell> {
 
     return Scaffold(
       body: Row(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           // Sidebar for desktop
           if (isDesktop) _buildSidebar(),
@@ -113,47 +114,56 @@ class _DashboardShellState extends State<DashboardShell> {
   }
 
   Widget _buildSidebar() {
-    return Container(
-      width: 256,
+    return Material(
       color: DashboardColors.card,
-      child: Column(
-        children: [
-          // Header
-          Padding(
-            padding: const EdgeInsets.all(24),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text('Admin Dashboard',
-                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-                const SizedBox(height: 4),
-                Text('Portfolio Manager',
-                    style: TextStyle(fontSize: 14, color: DashboardColors.mutedForeground)),
-              ],
-            ),
-          ),
-          // Nav items
-          Expanded(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 12),
+      child: SizedBox(
+        width: 256,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            // Header
+            Padding(
+              padding: const EdgeInsets.all(24),
               child: Column(
-                children: List.generate(_navItems.length, (i) {
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text('Admin Dashboard',
+                      style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                          color: DashboardColors.primary)),
+                  const SizedBox(height: 4),
+                  Text('Portfolio Manager',
+                      style: TextStyle(
+                          fontSize: 14,
+                          color: DashboardColors.mutedForeground)),
+                ],
+              ),
+            ),
+            // Nav items
+            Expanded(
+              child: ListView.builder(
+                padding: const EdgeInsets.symmetric(horizontal: 12),
+                itemCount: _navItems.length,
+                itemBuilder: (context, i) {
                   final item = _navItems[i];
                   final selected = _selectedIndex == i;
                   return Padding(
                     padding: const EdgeInsets.only(bottom: 4),
-                    child: Material(
-                      color: selected ? DashboardColors.primary : Colors.transparent,
+                    child: InkWell(
                       borderRadius: BorderRadius.circular(8),
-                      child: InkWell(
-                        borderRadius: BorderRadius.circular(8),
-                        onTap: () => setState(() {
-                          _selectedIndex = i;
-                          _sidebarOpen = false;
-                        }),
-                        hoverColor: DashboardColors.accent,
+                      onTap: () => _goTo(i),
+                      hoverColor: DashboardColors.accent,
+                      child: Ink(
+                        decoration: BoxDecoration(
+                          color: selected
+                              ? DashboardColors.primary
+                              : Colors.transparent,
+                          borderRadius: BorderRadius.circular(8),
+                        ),
                         child: Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 12, vertical: 10),
                           child: Row(
                             children: [
                               Icon(item.icon,
@@ -173,10 +183,13 @@ class _DashboardShellState extends State<DashboardShell> {
                               ),
                               if (item.label == 'Messages')
                                 StreamBuilder<int>(
-                                  stream: FirestoreService.unreadMessagesCountStream(),
+                                  stream: FirestoreService
+                                      .unreadMessagesCountStream(),
                                   builder: (context, snap) {
                                     final unread = snap.data ?? 0;
-                                    if (unread == 0) return const SizedBox.shrink();
+                                    if (unread == 0) {
+                                      return const SizedBox.shrink();
+                                    }
                                     return Container(
                                       padding: const EdgeInsets.symmetric(
                                           horizontal: 8, vertical: 2),
@@ -184,7 +197,8 @@ class _DashboardShellState extends State<DashboardShell> {
                                         color: selected
                                             ? DashboardColors.primaryForeground
                                             : DashboardColors.primary,
-                                        borderRadius: BorderRadius.circular(999),
+                                        borderRadius:
+                                            BorderRadius.circular(999),
                                       ),
                                       child: Text(
                                         '$unread',
@@ -193,7 +207,8 @@ class _DashboardShellState extends State<DashboardShell> {
                                           fontWeight: FontWeight.w700,
                                           color: selected
                                               ? DashboardColors.primary
-                                              : DashboardColors.primaryForeground,
+                                              : DashboardColors
+                                                  .primaryForeground,
                                         ),
                                       ),
                                     );
@@ -205,34 +220,35 @@ class _DashboardShellState extends State<DashboardShell> {
                       ),
                     ),
                   );
-                }),
+                },
               ),
             ),
-          ),
-          // Footer
-          Container(
-            padding: const EdgeInsets.all(12),
-            decoration: const BoxDecoration(
-              border: Border(top: BorderSide(color: DashboardColors.border)),
+            // Footer
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: const BoxDecoration(
+                border: Border(top: BorderSide(color: DashboardColors.border)),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  _SidebarButton(
+                    icon: Icons.home_outlined,
+                    label: 'View Portfolio',
+                    onTap: () {},
+                  ),
+                  const SizedBox(height: 4),
+                  _SidebarButton(
+                    icon: Icons.logout,
+                    label: 'Logout',
+                    color: DashboardColors.destructive,
+                    onTap: () {},
+                  ),
+                ],
+              ),
             ),
-            child: Column(
-              children: [
-                _SidebarButton(
-                  icon: Icons.home_outlined,
-                  label: 'View Portfolio',
-                  onTap: () {},
-                ),
-                const SizedBox(height: 4),
-                _SidebarButton(
-                  icon: Icons.logout,
-                  label: 'Logout',
-                  color: DashboardColors.destructive,
-                  onTap: () {},
-                ),
-              ],
-            ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -254,22 +270,19 @@ class _SidebarButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = color ?? DashboardColors.primary;
-    return Material(
-      color: Colors.transparent,
+    return InkWell(
       borderRadius: BorderRadius.circular(8),
-      child: InkWell(
-        borderRadius: BorderRadius.circular(8),
-        onTap: onTap,
-        hoverColor: DashboardColors.accent,
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-          child: Row(
-            children: [
-              Icon(icon, size: 20, color: c),
-              const SizedBox(width: 12),
-              Text(label, style: TextStyle(color: c, fontWeight: FontWeight.w500)),
-            ],
-          ),
+      onTap: onTap,
+      hoverColor: DashboardColors.accent,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+        child: Row(
+          children: [
+            Icon(icon, size: 20, color: c),
+            const SizedBox(width: 12),
+            Text(label,
+                style: TextStyle(color: c, fontWeight: FontWeight.w500)),
+          ],
         ),
       ),
     );
