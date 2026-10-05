@@ -70,9 +70,12 @@ class ProjectDetail extends StatelessWidget {
               ProjectStoreLinks(project: p),
               const SizedBox(height: 36),
               if (p.gallery.isNotEmpty || p.image.isNotEmpty)
-                ConstrainedBox(
-                  constraints: const BoxConstraints(maxWidth: 950),
-                  child: ProjectMedia(project: p),
+                Entrance(
+                  index: 1,
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: 950),
+                    child: ProjectMedia(project: p),
+                  ),
                 ),
               const SizedBox(height: 48),
               _section('Product overview', p.overview),
@@ -157,28 +160,28 @@ class ProjectDetail extends StatelessWidget {
                         for (var i = 0; i < p.gallery.length; i++)
                           SizedBox(
                             width: (c.maxWidth - 16 * (cols - 1)) / cols,
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Semantics(
-                                  button: true,
-                                  label:
-                                      'View ${(p.gallery[i]['alt'] ?? 'screen ${i + 1}')} full size',
-                                  excludeSemantics: true,
-                                  onTap: () => showDialog(
-                                    useRootNavigator: false,
-                                    context: context,
-                                    builder: (_) => GalleryViewer(
-                                      project: p,
-                                      initialIndex: i,
+                            child: Entrance(
+                              index: i % cols,
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Semantics(
+                                    button: true,
+                                    label:
+                                        'View ${(p.gallery[i]['alt'] ?? 'screen ${i + 1}')} full size',
+                                    excludeSemantics: true,
+                                    onTap: () => showContentDialog(
+                                      useRootNavigator: false,
+                                      context: context,
+                                      builder: (_) => GalleryViewer(
+                                        project: p,
+                                        initialIndex: i,
+                                      ),
                                     ),
-                                  ),
-                                  child: Material(
-                                    color: Design.tint,
-                                    borderRadius: BorderRadius.circular(12),
-                                    clipBehavior: Clip.antiAlias,
-                                    child: InkWell(
-                                      onTap: () => showDialog(
+                                    child: MotionSurface(
+                                      color: Design.tint,
+                                      borderRadius: BorderRadius.circular(12),
+                                      onTap: () => showContentDialog(
                                         useRootNavigator: false,
                                         context: context,
                                         builder: (_) => GalleryViewer(
@@ -201,14 +204,14 @@ class ProjectDetail extends StatelessWidget {
                                       ),
                                     ),
                                   ),
-                                ),
-                                const SizedBox(height: 10),
-                                Text(
-                                  (p.gallery[i]['alt'] ?? 'Screen ${i + 1}')
-                                      .toString(),
-                                  style: Design.captionType,
-                                ),
-                              ],
+                                  const SizedBox(height: 10),
+                                  Text(
+                                    (p.gallery[i]['alt'] ?? 'Screen ${i + 1}')
+                                        .toString(),
+                                    style: Design.captionType,
+                                  ),
+                                ],
+                              ),
                             ),
                           ),
                       ],
@@ -231,31 +234,33 @@ class ProjectDetail extends StatelessWidget {
 
   Widget _section(String title, String body) => body.trim().isEmpty
       ? const SizedBox.shrink()
-      : Padding(
-          padding: const EdgeInsets.only(bottom: 40),
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 820),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  style: const TextStyle(
-                    fontSize: 26,
-                    fontWeight: FontWeight.w700,
-                    letterSpacing: -.6,
+      : Entrance(
+          child: Padding(
+            padding: const EdgeInsets.only(bottom: 40),
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 820),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: const TextStyle(
+                      fontSize: 26,
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: -.6,
+                    ),
                   ),
-                ),
-                const SizedBox(height: 16),
-                Text(
-                  body,
-                  style: const TextStyle(
-                    fontSize: 16,
-                    color: Design.muted,
-                    height: 1.8,
+                  const SizedBox(height: 16),
+                  Text(
+                    body,
+                    style: const TextStyle(
+                      fontSize: 16,
+                      color: Design.muted,
+                      height: 1.8,
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         );
@@ -315,8 +320,11 @@ class GalleryViewer extends StatefulWidget {
 
 class _GalleryViewerState extends State<GalleryViewer> {
   late int index = widget.initialIndex;
-  void move(int delta) =>
-      setState(() => index = (index + delta) % widget.project.gallery.length);
+  int direction = 1;
+  void move(int delta) => setState(() {
+    direction = delta;
+    index = (index + delta) % widget.project.gallery.length;
+  });
   @override
   Widget build(BuildContext context) {
     final item = widget.project.gallery[index];
@@ -361,13 +369,18 @@ class _GalleryViewerState extends State<GalleryViewer> {
                     ],
                   ),
                   Expanded(
-                    child: InteractiveViewer(
-                      minScale: 1,
-                      maxScale: 3,
-                      child: PortfolioImage(
-                        url: item['url'].toString(),
-                        alt: (item['alt'] ?? '').toString(),
-                        thumbnail: false,
+                    child: MotionSwap(
+                      alignment: Alignment.center,
+                      offset: Offset(.04 * direction, 0),
+                      child: InteractiveViewer(
+                        key: ValueKey(index),
+                        minScale: 1,
+                        maxScale: 3,
+                        child: PortfolioImage(
+                          url: item['url'].toString(),
+                          alt: (item['alt'] ?? '').toString(),
+                          thumbnail: false,
+                        ),
                       ),
                     ),
                   ),

@@ -19,6 +19,21 @@ class PortfolioImage extends StatelessWidget {
     this.fit = BoxFit.contain,
     this.thumbnail = true,
   });
+
+  Widget frame(
+    BuildContext context,
+    Widget child,
+    int? frame,
+    bool synchronouslyLoaded,
+  ) => synchronouslyLoaded || Design.reduced(context)
+      ? child
+      : AnimatedOpacity(
+          opacity: frame == null ? 0 : 1,
+          duration: Design.release,
+          curve: Design.ease,
+          child: child,
+        );
+
   @override
   Widget build(BuildContext context) {
     final fallback = Container(
@@ -37,10 +52,12 @@ class PortfolioImage extends StatelessWidget {
         ),
         builder: (context, snapshot) => snapshot.hasData
             ? Image.memory(
+                key: ValueKey(url),
                 snapshot.data!,
                 fit: fit,
                 semanticLabel: alt,
                 cacheWidth: thumbnail ? 420 : null,
+                frameBuilder: frame,
               )
             : fallback,
       );
@@ -48,10 +65,12 @@ class PortfolioImage extends StatelessWidget {
     if (url.startsWith('data:image/')) {
       try {
         return Image.memory(
+          key: ValueKey(url),
           base64Decode(url.split(',').last),
           fit: fit,
           semanticLabel: alt,
           cacheWidth: thumbnail ? 420 : null,
+          frameBuilder: frame,
           errorBuilder: (_, e, s) => fallback,
         );
       } catch (_) {
@@ -60,21 +79,23 @@ class PortfolioImage extends StatelessWidget {
     }
     if (url.startsWith('packages/') || url.startsWith('assets/')) {
       return Image.asset(
+        key: ValueKey(url),
         url,
         fit: fit,
         semanticLabel: alt,
         cacheWidth: thumbnail ? 420 : null,
+        frameBuilder: frame,
         errorBuilder: (_, e, s) => fallback,
       );
     }
     return Image.network(
+      key: ValueKey(url),
       url,
       fit: fit,
       semanticLabel: alt,
       cacheWidth: thumbnail ? 420 : null,
+      frameBuilder: frame,
       errorBuilder: (_, e, s) => fallback,
-      loadingBuilder: (context, child, progress) =>
-          progress == null ? child : fallback,
     );
   }
 }
@@ -175,20 +196,26 @@ class _ProjectMediaState extends State<ProjectMedia> {
                         child: TweenAnimationBuilder<double>(
                           tween: Tween(
                             end: hovering && !Design.reduced(context)
-                                ? 1.035
-                                : 1,
+                                ? 1.0
+                                : 0.0,
                           ),
                           duration: Design.reduced(context)
                               ? Duration.zero
                               : Design.motion,
-                          curve: Curves.easeOutCubic,
-                          builder: (context, scale, child) => Transform.scale(
-                            scale: scale,
-                            child: Transform.rotate(
-                              angle: images.length == 1
-                                  ? 0
-                                  : (i == 0 ? -3 : 3) * math.pi / 180,
-                              child: child,
+                          curve: Design.ease,
+                          builder: (context, t, child) => Transform.translate(
+                            offset: Offset(0, -(i == 0 ? 5 : 9) * t),
+                            child: Transform.scale(
+                              scale: 1 + .04 * t,
+                              child: Transform.rotate(
+                                angle: images.length == 1
+                                    ? 0
+                                    : (i == 0 ? -1 : 1) *
+                                          (3 - 2 * t) *
+                                          math.pi /
+                                          180,
+                                child: child,
+                              ),
                             ),
                           ),
                           child: Container(

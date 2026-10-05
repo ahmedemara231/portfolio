@@ -18,6 +18,8 @@ Generated preview builds and browser captures live in `.preview`, outside the so
 
 The public site presents a compact introduction, four selected projects, experience, three Flutter packages, grouped capabilities, education, and contact. `/projects` contains the full collection and domain filters. `/projects/<slug>` is a shareable case study. Empty contribution, challenge, technology, and outcome sections are omitted.
 
+Shared motion tokens live in `packages/core/lib/src/design/design_system.dart`. `Entrance` reveals content once as it reaches its scroll viewport, then removes its scroll listener. Native button states drive feedback, with a shared browser observer providing immediate press feedback for accessible web buttons. It only affects painting and leaves actions and event handling to Flutter. `MotionSurface` adds card lift and press motion. Gallery changes and filters use `MotionSwap`, while `showContentDialog` gives previews a consistent entrance and keeps dashboard dialogs inside the authenticated navigator. Reduced-motion preferences disable these effects. Outgoing gallery and filter content immediately loses pointer, keyboard, and screen-reader actions, and changing screenshots resets zoom.
+
 The Studio manages profile and contact, CV uploads, availability, all project fields, galleries, verified links, draft/publication state, featured selection and order, experience dates, packages, capabilities, education, credibility, social links, and page metadata. Separate arrows change collection order and featured order. All changes persist; previews can show an unsaved project without publishing it. Editors protect unsaved changes, validate inputs, confirm deletion, and report failed writes.
 
 Local uploads are limited to 900 KB per file to respect browser storage quotas. Firebase mode accepts screenshots under 8 MB and PDFs under 5 MB. Draft screenshot uploads use authorized Storage reads, without public download-token URLs. CVs are intentionally public. Existing media URLs remain editable.
@@ -84,7 +86,11 @@ firebase emulators:exec --project demo-portfolio --only firestore,storage \
 
 Install `tools/security` dependencies before rule tests. Rule tests cover anonymous and non-admin denial, direct draft access, publication, atomic ordering, message privacy and throttling, and private screenshot reads. Flutter tests cover persistence, case-study compatibility, ordering, editorial layouts from 320 to 1920 pixels, reduced motion, and unsaved editor changes.
 
+Motion tests also cover visibility-triggered reveals, stable tap targets, keyboard activation, canceled presses, and outgoing preview accessibility.
+
 Browser verification uses Playwright and local Chrome. Install `tools/browser` dependencies and run `npm test` there while the preview is running. It exercises actual controls, saves and reloads content, checks public publication behavior, and captures responsive screenshots in `.preview`.
+
+Run `npm run test:motion` in the same directory to exercise real pointer feedback, gallery and dashboard preview transitions, responsive scrolling, and reduced motion. Animation captures are written to `.preview/motion`.
 
 Run `node tools/browser/auth_verify.cjs` with the Firebase integration preview to check sign-in, non-admin denial, authenticated persistence, public updates, metadata exports, anonymous contact submissions, mobile inbox dialogs, and session protection of open editors. `node tools/browser/media_verify.cjs` checks actual uploads, private draft media, publication, safe deletion, and CV downloads. Demo sign-ins use tab-scoped sessions so public visitors and the owner can be exercised independently on the local shared origin.
 

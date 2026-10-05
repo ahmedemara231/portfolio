@@ -98,7 +98,7 @@ class _RecordEditorState extends State<RecordEditor> {
   Future<bool> discard() async {
     if (saving || uploading) return false;
     if (!dirty) return true;
-    return await showDialog<bool>(
+    return await showContentDialog<bool>(
           useRootNavigator: false,
           context: context,
           builder: (ctx) => AlertDialog(
@@ -374,7 +374,7 @@ class _RecordEditorState extends State<RecordEditor> {
 
   void preview() {
     final project = ProjectModel.fromMap(data(), recordId);
-    showDialog(
+    showContentDialog(
       useRootNavigator: false,
       context: context,
       builder: (ctx) => ContentDialog(
@@ -410,6 +410,13 @@ class _RecordEditorState extends State<RecordEditor> {
   @override
   Widget build(BuildContext context) {
     final groups = widget.schema.fields.map((f) => f.group).toSet();
+    final status = saving
+        ? 'Saving…'
+        : dirty
+        ? 'Unsaved changes'
+        : widget.id == null && !widget.profile
+        ? 'New draft'
+        : 'Saved';
     return PopScope(
       canPop: !dirty && !saving && !uploading,
       onPopInvokedWithResult: (didPop, result) {
@@ -432,15 +439,18 @@ class _RecordEditorState extends State<RecordEditor> {
           actions: [
             Padding(
               padding: const EdgeInsets.only(right: 16),
-              child: StatusPill(
-                saving
-                    ? 'Saving…'
-                    : dirty
-                    ? 'Unsaved changes'
-                    : widget.id == null && !widget.profile
-                    ? 'New draft'
-                    : 'Saved',
-                active: !dirty && (widget.id != null || widget.profile),
+              child: Semantics(
+                liveRegion: true,
+                child: MotionSwap(
+                  child: StatusPill(
+                    status,
+                    key: ValueKey(status),
+                    active:
+                        !dirty &&
+                        !saving &&
+                        (widget.id != null || widget.profile),
+                  ),
+                ),
               ),
             ),
           ],
@@ -544,22 +554,33 @@ class _RecordEditorState extends State<RecordEditor> {
                     ),
                     FilledButton.icon(
                       onPressed: saving || uploading ? null : save,
-                      icon: saving || uploading
-                          ? const SizedBox(
-                              width: 16,
-                              height: 16,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2,
-                                color: Colors.white,
+                      icon: MotionSwap(
+                        alignment: Alignment.center,
+                        child: saving || uploading
+                            ? const SizedBox(
+                                key: ValueKey('progress'),
+                                width: 16,
+                                height: 16,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  color: Colors.white,
+                                ),
+                              )
+                            : const Icon(
+                                Icons.check,
+                                key: ValueKey('ready'),
+                                size: 18,
                               ),
-                            )
-                          : const Icon(Icons.check, size: 18),
-                      label: Text(
-                        saving
-                            ? 'Saving…'
-                            : uploading
-                            ? 'Uploading…'
-                            : 'Save changes',
+                      ),
+                      label: MotionSwap(
+                        child: Text(
+                          saving
+                              ? 'Saving…'
+                              : uploading
+                              ? 'Uploading…'
+                              : 'Save changes',
+                          key: ValueKey((saving, uploading)),
+                        ),
                       ),
                     ),
                   ],

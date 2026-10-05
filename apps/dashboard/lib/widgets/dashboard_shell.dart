@@ -136,7 +136,12 @@ class _DashboardShellState extends State<DashboardShell> {
                 Expanded(
                   child: Padding(
                     padding: EdgeInsets.all(desktop ? 36 : 20),
-                    child: KeyedSubtree(key: ValueKey(selected), child: page()),
+                    child: Entrance(
+                      key: ValueKey(selected),
+                      scrollTriggered: false,
+                      distance: 10,
+                      child: page(),
+                    ),
                   ),
                 ),
               ],

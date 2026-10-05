@@ -1,3 +1,8 @@
+import 'press_event.dart';
+
+void Function() watchPressFeedback(void Function(BrowserPress) callback) =>
+    () {};
+
 void watchStorage(String key, void Function() callback) {}
 void protectUnsavedChanges(bool dirty) {}
 void updatePageMetadata({

@@ -1,5 +1,117 @@
 import 'dart:js_interop';
 import 'package:web/web.dart' as web;
+import 'press_event.dart';
+
+final _pressObservers = <void Function(BrowserPress)>{};
+final _activePresses = <int>{};
+JSFunction? _pointerFeedback, _keyFeedback, _blurFeedback;
+
+// PointerEvent coordinates can be fractional, while the inherited MouseEvent
+// getters in package:web are typed as integers. Preserve CSS pixel precision.
+@JS()
+extension type _PressCoordinates(JSObject _) implements JSObject {
+  external double get clientX;
+  external double get clientY;
+}
+
+/// Flutter web debounces pointer events on accessible buttons for 200ms.
+/// Observe the original events for immediate visual feedback, while leaving
+/// all click, focus, scrolling, and keyboard handling to Flutter.
+void Function() watchPressFeedback(void Function(BrowserPress) callback) {
+  void notify(BrowserPress press) {
+    for (final observer in _pressObservers.toList()) {
+      observer(press);
+    }
+  }
+
+  if (_pressObservers.isEmpty) {
+    _pointerFeedback = ((web.PointerEvent event) {
+      if (!event.isPrimary) return;
+      if (event.type == 'pointerdown') {
+        if (event.button != 0) return;
+        final target = event.target;
+        if (target == null || !target.isA<web.Element>()) return;
+        final button = (target as web.Element).closest('[role="button"]');
+        if (button == null || button.getAttribute('aria-disabled') == 'true')
+          return;
+        _activePresses.add(event.pointerId);
+      } else if (!_activePresses.contains(event.pointerId)) {
+        return;
+      }
+      final phase = switch (event.type) {
+        'pointerdown' => PressPhase.down,
+        'pointermove' => PressPhase.move,
+        _ => PressPhase.end,
+      };
+      if (phase == PressPhase.end) _activePresses.remove(event.pointerId);
+      final coordinates = _PressCoordinates(event);
+      notify(
+        BrowserPress(
+          event.pointerId,
+          coordinates.clientX,
+          coordinates.clientY,
+          phase,
+        ),
+      );
+    }).toJS;
+    _keyFeedback = ((web.KeyboardEvent event) {
+      if (event.key != 'Enter' && event.key != ' ') return;
+      if (event.type == 'keyup') {
+        notify(const BrowserPress(-1, 0, 0, PressPhase.end));
+        return;
+      }
+      if (event.repeat) return;
+      final active = web.document.activeElement;
+      if (active?.getAttribute('role') != 'button' ||
+          active?.getAttribute('aria-disabled') == 'true')
+        return;
+      final rect = active!.getBoundingClientRect();
+      notify(
+        BrowserPress(
+          -1,
+          rect.x + rect.width / 2,
+          rect.y + rect.height / 2,
+          PressPhase.down,
+        ),
+      );
+    }).toJS;
+    _blurFeedback = ((web.Event event) {
+      _activePresses.clear();
+      notify(const BrowserPress(-1, 0, 0, PressPhase.clear));
+    }).toJS;
+    for (final type in [
+      'pointerdown',
+      'pointermove',
+      'pointerup',
+      'pointercancel',
+    ]) {
+      web.window.addEventListener(type, _pointerFeedback, true.toJS);
+    }
+    for (final type in ['keydown', 'keyup']) {
+      web.window.addEventListener(type, _keyFeedback, true.toJS);
+    }
+    web.window.addEventListener('blur', _blurFeedback);
+  }
+  _pressObservers.add(callback);
+  return () {
+    _pressObservers.remove(callback);
+    if (_pressObservers.isNotEmpty) return;
+    for (final type in [
+      'pointerdown',
+      'pointermove',
+      'pointerup',
+      'pointercancel',
+    ]) {
+      web.window.removeEventListener(type, _pointerFeedback, true.toJS);
+    }
+    for (final type in ['keydown', 'keyup']) {
+      web.window.removeEventListener(type, _keyFeedback, true.toJS);
+    }
+    web.window.removeEventListener('blur', _blurFeedback);
+    _activePresses.clear();
+    _pointerFeedback = _keyFeedback = _blurFeedback = null;
+  };
+}
 
 void watchStorage(String key, void Function() callback) {
   web.window.addEventListener(

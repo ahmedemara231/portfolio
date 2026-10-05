@@ -79,39 +79,36 @@ class _OverviewPageState extends State<OverviewPage> {
                       .map(
                         (e) => SizedBox(
                           width: (c.maxWidth - 16 * (cols - 1)) / cols,
-                          child: Material(
+                          child: MotionSurface(
                             color: Design.surface,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
-                              side: const BorderSide(color: Design.line),
-                            ),
-                            child: InkWell(
-                              borderRadius: BorderRadius.circular(12),
-                              onTap: () => widget.onNavigate?.call(e.$3),
-                              child: Padding(
-                                padding: const EdgeInsets.all(24),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      e.$1,
-                                      style: const TextStyle(
-                                        fontSize: 12,
-                                        color: Design.muted,
-                                        fontWeight: FontWeight.w600,
-                                      ),
+                            borderRadius: BorderRadius.circular(12),
+                            border: const BorderSide(color: Design.line),
+                            onTap: widget.onNavigate == null
+                                ? null
+                                : () => widget.onNavigate!(e.$3),
+                            child: Padding(
+                              padding: const EdgeInsets.all(24),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    e.$1,
+                                    style: const TextStyle(
+                                      fontSize: 12,
+                                      color: Design.muted,
+                                      fontWeight: FontWeight.w600,
                                     ),
-                                    const SizedBox(height: 18),
-                                    Text(
-                                      '${e.$2}',
-                                      style: const TextStyle(
-                                        fontSize: 40,
-                                        fontWeight: FontWeight.w700,
-                                        letterSpacing: -1.5,
-                                      ),
+                                  ),
+                                  const SizedBox(height: 18),
+                                  Text(
+                                    '${e.$2}',
+                                    style: const TextStyle(
+                                      fontSize: 40,
+                                      fontWeight: FontWeight.w700,
+                                      letterSpacing: -1.5,
                                     ),
-                                  ],
-                                ),
+                                  ),
+                                ],
                               ),
                             ),
                           ),

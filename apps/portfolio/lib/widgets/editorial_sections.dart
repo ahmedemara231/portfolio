@@ -290,6 +290,7 @@ class ProjectGrid extends StatelessWidget {
             SizedBox(
               width: (c.maxWidth - gap * (cols - 1)) / cols,
               child: Entrance(
+                key: ValueKey(projects[i].id),
                 index: i,
                 child: ProjectPreview(project: projects[i], index: i),
               ),
@@ -308,20 +309,16 @@ class ProjectPreview extends StatelessWidget {
   Widget build(BuildContext context) => Column(
     crossAxisAlignment: CrossAxisAlignment.start,
     children: [
-      Material(
-        color: Colors.transparent,
+      MotionSurface(
         borderRadius: BorderRadius.circular(Design.radius),
-        child: InkWell(
-          borderRadius: BorderRadius.circular(Design.radius),
-          onTap: () => Navigator.pushNamed(
-            context,
-            '/projects/${project.slug.isEmpty ? project.id : project.slug}',
-          ),
-          child: Semantics(
-            button: true,
-            label: 'Explore ${project.title}',
-            child: ProjectMedia(project: project),
-          ),
+        onTap: () => Navigator.pushNamed(
+          context,
+          '/projects/${project.slug.isEmpty ? project.id : project.slug}',
+        ),
+        child: Semantics(
+          button: true,
+          label: 'Explore ${project.title}',
+          child: ProjectMedia(project: project),
         ),
       ),
       const SizedBox(height: 20),
@@ -426,96 +423,100 @@ class ExperienceBlock extends StatelessWidget {
           ),
           const SizedBox(height: 40),
           for (final e in list)
-            Padding(
-              padding: const EdgeInsets.only(bottom: 36),
-              child: LayoutBuilder(
-                builder: (context, c) {
-                  final left = Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Eyebrow((e['period'] ?? '').toString()),
-                      const SizedBox(height: 12),
-                      Text(
-                        (e['company'] ?? '').toString(),
-                        style: const TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        (e['location'] ?? '').toString(),
-                        style: const TextStyle(
-                          fontSize: 13,
-                          color: Design.muted,
-                        ),
-                      ),
-                    ],
-                  );
-                  final right = Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        (e['title'] ?? '').toString(),
-                        style: const TextStyle(
-                          fontSize: 24,
-                          fontWeight: FontWeight.w700,
-                          letterSpacing: -.7,
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-                      Text(
-                        (e['description'] ?? '').toString(),
-                        style: const TextStyle(
-                          color: Design.muted,
-                          height: 1.7,
-                        ),
-                      ),
-                      const SizedBox(height: 18),
-                      for (final a in (e['achievements'] as List? ?? []))
-                        Padding(
-                          padding: const EdgeInsets.only(bottom: 12),
-                          child: Row(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              const Padding(
-                                padding: EdgeInsets.only(top: 8),
-                                child: Icon(
-                                  Icons.circle,
-                                  size: 4,
-                                  color: Design.accent,
-                                ),
-                              ),
-                              const SizedBox(width: 12),
-                              Expanded(
-                                child: Text(
-                                  a.toString(),
-                                  style: const TextStyle(
-                                    fontSize: 14,
-                                    height: 1.75,
-                                    color: Design.muted,
-                                  ),
-                                ),
-                              ),
-                            ],
+            Entrance(
+              key: ValueKey(e['id'] ?? e['company']),
+              index: list.indexOf(e),
+              child: Padding(
+                padding: const EdgeInsets.only(bottom: 36),
+                child: LayoutBuilder(
+                  builder: (context, c) {
+                    final left = Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Eyebrow((e['period'] ?? '').toString()),
+                        const SizedBox(height: 12),
+                        Text(
+                          (e['company'] ?? '').toString(),
+                          style: const TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.w700,
                           ),
                         ),
-                    ],
-                  );
-                  return c.maxWidth >= 750
-                      ? Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Expanded(child: left),
-                            const SizedBox(width: 64),
-                            Expanded(flex: 2, child: right),
-                          ],
-                        )
-                      : Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [left, const SizedBox(height: 24), right],
-                        );
-                },
+                        const SizedBox(height: 8),
+                        Text(
+                          (e['location'] ?? '').toString(),
+                          style: const TextStyle(
+                            fontSize: 13,
+                            color: Design.muted,
+                          ),
+                        ),
+                      ],
+                    );
+                    final right = Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          (e['title'] ?? '').toString(),
+                          style: const TextStyle(
+                            fontSize: 24,
+                            fontWeight: FontWeight.w700,
+                            letterSpacing: -.7,
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                        Text(
+                          (e['description'] ?? '').toString(),
+                          style: const TextStyle(
+                            color: Design.muted,
+                            height: 1.7,
+                          ),
+                        ),
+                        const SizedBox(height: 18),
+                        for (final a in (e['achievements'] as List? ?? []))
+                          Padding(
+                            padding: const EdgeInsets.only(bottom: 12),
+                            child: Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Padding(
+                                  padding: EdgeInsets.only(top: 8),
+                                  child: Icon(
+                                    Icons.circle,
+                                    size: 4,
+                                    color: Design.accent,
+                                  ),
+                                ),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: Text(
+                                    a.toString(),
+                                    style: const TextStyle(
+                                      fontSize: 14,
+                                      height: 1.75,
+                                      color: Design.muted,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                      ],
+                    );
+                    return c.maxWidth >= 750
+                        ? Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Expanded(child: left),
+                              const SizedBox(width: 64),
+                              Expanded(flex: 2, child: right),
+                            ],
+                          )
+                        : Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [left, const SizedBox(height: 24), right],
+                          );
+                  },
+                ),
               ),
             ),
         ],
@@ -557,64 +558,67 @@ class PackagesBlock extends StatelessWidget {
                     for (var i = 0; i < packages.length; i++)
                       SizedBox(
                         width: (c.maxWidth - 36 * (cols - 1)) / cols,
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const Divider(),
-                            const SizedBox(height: 24),
-                            Row(
-                              children: [
-                                const Icon(
-                                  Icons.data_object,
-                                  size: 22,
-                                  color: Design.accent,
+                        child: Entrance(
+                          index: i,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Divider(),
+                              const SizedBox(height: 24),
+                              Row(
+                                children: [
+                                  const Icon(
+                                    Icons.data_object,
+                                    size: 22,
+                                    color: Design.accent,
+                                  ),
+                                  const Spacer(),
+                                  Text(
+                                    '0${i + 1}',
+                                    style: const TextStyle(
+                                      color: Design.muted,
+                                      fontSize: 12,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 22),
+                              Text(
+                                (packages[i]['name'] ?? '').toString(),
+                                style: const TextStyle(
+                                  fontSize: 24,
+                                  fontWeight: FontWeight.w700,
+                                  letterSpacing: -.7,
                                 ),
-                                const Spacer(),
+                              ),
+                              if ((packages[i]['subtitle'] ?? '')
+                                  .toString()
+                                  .isNotEmpty) ...[
+                                const SizedBox(height: 8),
                                 Text(
-                                  '0${i + 1}',
+                                  packages[i]['subtitle'].toString(),
                                   style: const TextStyle(
-                                    color: Design.muted,
-                                    fontSize: 12,
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w600,
                                   ),
                                 ),
                               ],
-                            ),
-                            const SizedBox(height: 22),
-                            Text(
-                              (packages[i]['name'] ?? '').toString(),
-                              style: const TextStyle(
-                                fontSize: 24,
-                                fontWeight: FontWeight.w700,
-                                letterSpacing: -.7,
-                              ),
-                            ),
-                            if ((packages[i]['subtitle'] ?? '')
-                                .toString()
-                                .isNotEmpty) ...[
-                              const SizedBox(height: 8),
+                              const SizedBox(height: 14),
                               Text(
-                                packages[i]['subtitle'].toString(),
+                                (packages[i]['description'] ?? '').toString(),
                                 style: const TextStyle(
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.w600,
+                                  color: Design.muted,
+                                  fontSize: 14,
+                                  height: 1.8,
                                 ),
                               ),
-                            ],
-                            const SizedBox(height: 14),
-                            Text(
-                              (packages[i]['description'] ?? '').toString(),
-                              style: const TextStyle(
-                                color: Design.muted,
-                                fontSize: 14,
-                                height: 1.8,
+                              const SizedBox(height: 16),
+                              ExternalAction(
+                                label: 'View on pub.dev',
+                                url: (packages[i]['url'] ?? '').toString(),
                               ),
-                            ),
-                            const SizedBox(height: 16),
-                            ExternalAction(
-                              label: 'View on pub.dev',
-                              url: (packages[i]['url'] ?? '').toString(),
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
                       ),
                   ],
@@ -660,50 +664,53 @@ class CapabilitiesBlock extends StatelessWidget {
                     .map(
                       (s) => SizedBox(
                         width: (c.maxWidth - 36 * (cols - 1)) / cols,
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const Divider(),
-                            const SizedBox(height: 20),
-                            Text(
-                              (s['name'] ?? '').toString(),
-                              style: const TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.w700,
-                                letterSpacing: -.3,
-                              ),
-                            ),
-                            const SizedBox(height: 10),
-                            Text(
-                              (s['description'] ?? '').toString(),
-                              style: const TextStyle(
-                                fontSize: 13,
-                                color: Design.muted,
-                                height: 1.7,
-                              ),
-                            ),
-                            const SizedBox(height: 14),
-                            Text(
-                              (s['items'] as List? ?? []).join(' · '),
-                              style: const TextStyle(
-                                fontSize: 12,
-                                color: Design.accent,
-                                height: 1.9,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                            for (final id in (s['projectIds'] as List? ?? []))
-                              for (final p in content.projects.where(
-                                (p) => p.id == id,
-                              ))
-                                TextButton(
-                                  onPressed: () => Navigator.pushNamed(
-                                    context,
-                                    '/projects/${p.slug}',
-                                  ),
-                                  child: Text('See ${p.title} ↗'),
+                        child: Entrance(
+                          index: skills.indexOf(s) % cols,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Divider(),
+                              const SizedBox(height: 20),
+                              Text(
+                                (s['name'] ?? '').toString(),
+                                style: const TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.w700,
+                                  letterSpacing: -.3,
                                 ),
-                          ],
+                              ),
+                              const SizedBox(height: 10),
+                              Text(
+                                (s['description'] ?? '').toString(),
+                                style: const TextStyle(
+                                  fontSize: 13,
+                                  color: Design.muted,
+                                  height: 1.7,
+                                ),
+                              ),
+                              const SizedBox(height: 14),
+                              Text(
+                                (s['items'] as List? ?? []).join(' · '),
+                                style: const TextStyle(
+                                  fontSize: 12,
+                                  color: Design.accent,
+                                  height: 1.9,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                              for (final id in (s['projectIds'] as List? ?? []))
+                                for (final p in content.projects.where(
+                                  (p) => p.id == id,
+                                ))
+                                  TextButton(
+                                    onPressed: () => Navigator.pushNamed(
+                                      context,
+                                      '/projects/${p.slug}',
+                                    ),
+                                    child: Text('See ${p.title} ↗'),
+                                  ),
+                            ],
+                          ),
                         ),
                       ),
                     )
@@ -833,14 +840,21 @@ class AboutBlock extends StatelessWidget {
                 ? Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Expanded(flex: 3, child: about),
+                      Expanded(flex: 3, child: Entrance(child: about)),
                       const SizedBox(width: 100),
-                      Expanded(flex: 2, child: education),
+                      Expanded(
+                        flex: 2,
+                        child: Entrance(index: 1, child: education),
+                      ),
                     ],
                   )
                 : Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [about, const SizedBox(height: 40), education],
+                    children: [
+                      Entrance(child: about),
+                      const SizedBox(height: 40),
+                      Entrance(index: 1, child: education),
+                    ],
                   );
           },
         ),
@@ -858,90 +872,100 @@ class ContactBlock extends StatelessWidget {
     color: Design.ink,
     child: ContentWidth(
       vertical: 64,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Eyebrow('06 / Start a conversation', color: Color(0xFF9FCCBC)),
-          const SizedBox(height: 24),
-          Text(
-            content.text('contactTitle'),
-            style: TextStyle(
-              fontSize: MediaQuery.sizeOf(context).width < 600 ? 40 : 62,
-              height: 1.15,
-              fontWeight: FontWeight.w600,
-              letterSpacing: -2,
-              color: Design.paper,
+      child: Entrance(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Eyebrow(
+              '06 / Start a conversation',
+              color: Color(0xFF9FCCBC),
             ),
-          ),
-          const SizedBox(height: 24),
-          Text(
-            content.text('contactDescription'),
-            style: const TextStyle(
-              fontSize: 16,
-              color: Color(0xFFBDCAC3),
-              height: 1.8,
-            ),
-          ),
-          const SizedBox(height: 32),
-          Wrap(
-            spacing: 16,
-            runSpacing: 12,
-            children: [
-              FilledButton.icon(
-                style: FilledButton.styleFrom(
-                  backgroundColor: Design.paper,
-                  foregroundColor: Design.ink,
-                ),
-                onPressed: () =>
-                    openLink(context, 'mailto:${content.text('contactEmail')}'),
-                icon: const Icon(Icons.north_east, size: 18),
-                label: Text(content.text('contactEmail')),
+            const SizedBox(height: 24),
+            Text(
+              content.text('contactTitle'),
+              style: TextStyle(
+                fontSize: MediaQuery.sizeOf(context).width < 600 ? 40 : 62,
+                height: 1.15,
+                fontWeight: FontWeight.w600,
+                letterSpacing: -2,
+                color: Design.paper,
               ),
-              if (content.profile['contactFormEnabled'] == true)
-                OutlinedButton.icon(
-                  style: OutlinedButton.styleFrom(
-                    foregroundColor: Design.paper,
-                    side: const BorderSide(color: Color(0xFF849B8F)),
+            ),
+            const SizedBox(height: 24),
+            Text(
+              content.text('contactDescription'),
+              style: const TextStyle(
+                fontSize: 16,
+                color: Color(0xFFBDCAC3),
+                height: 1.8,
+              ),
+            ),
+            const SizedBox(height: 32),
+            Wrap(
+              spacing: 16,
+              runSpacing: 12,
+              children: [
+                FilledButton.icon(
+                  style: FilledButton.styleFrom(
+                    backgroundColor: Design.paper,
+                    foregroundColor: Design.ink,
                   ),
-                  onPressed: () => showDialog(
-                    context: context,
-                    barrierDismissible: false,
-                    builder: (_) =>
-                        ContactFormDialog(email: content.text('contactEmail')),
+                  onPressed: () => openLink(
+                    context,
+                    'mailto:${content.text('contactEmail')}',
                   ),
-                  icon: const Icon(Icons.chat_bubble_outline, size: 18),
-                  label: const Text('Send a message'),
+                  icon: const Icon(Icons.north_east, size: 18),
+                  label: Text(content.text('contactEmail')),
                 ),
-              if (content.text('contactPhone').isNotEmpty)
-                TextButton(
-                  style: TextButton.styleFrom(foregroundColor: Design.paper),
-                  onPressed: () =>
-                      openLink(context, 'tel:${content.text('contactPhone')}'),
-                  child: Text(content.text('contactPhone')),
-                ),
-            ],
-          ),
-          const SizedBox(height: 28),
-          Wrap(
-            spacing: 24,
-            runSpacing: 8,
-            children: [
-              for (final social in content.list('social_links'))
-                TextButton.icon(
-                  style: TextButton.styleFrom(
-                    foregroundColor: const Color(0xFFBDCAC3),
+                if (content.profile['contactFormEnabled'] == true)
+                  OutlinedButton.icon(
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: Design.paper,
+                      side: const BorderSide(color: Color(0xFF849B8F)),
+                    ),
+                    onPressed: () => showContentDialog(
+                      context: context,
+                      barrierDismissible: false,
+                      builder: (_) => ContactFormDialog(
+                        email: content.text('contactEmail'),
+                      ),
+                    ),
+                    icon: const Icon(Icons.chat_bubble_outline, size: 18),
+                    label: const Text('Send a message'),
                   ),
-                  onPressed: () =>
-                      openLink(context, (social['url'] ?? '').toString()),
-                  label: Text(
-                    (social['label'] ?? social['icon'] ?? 'Link').toString(),
+                if (content.text('contactPhone').isNotEmpty)
+                  TextButton(
+                    style: TextButton.styleFrom(foregroundColor: Design.paper),
+                    onPressed: () => openLink(
+                      context,
+                      'tel:${content.text('contactPhone')}',
+                    ),
+                    child: Text(content.text('contactPhone')),
                   ),
-                  icon: const Icon(Icons.north_east, size: 15),
-                  iconAlignment: IconAlignment.end,
-                ),
-            ],
-          ),
-        ],
+              ],
+            ),
+            const SizedBox(height: 28),
+            Wrap(
+              spacing: 24,
+              runSpacing: 8,
+              children: [
+                for (final social in content.list('social_links'))
+                  TextButton.icon(
+                    style: TextButton.styleFrom(
+                      foregroundColor: const Color(0xFFBDCAC3),
+                    ),
+                    onPressed: () =>
+                        openLink(context, (social['url'] ?? '').toString()),
+                    label: Text(
+                      (social['label'] ?? social['icon'] ?? 'Link').toString(),
+                    ),
+                    icon: const Icon(Icons.north_east, size: 15),
+                    iconAlignment: IconAlignment.end,
+                  ),
+              ],
+            ),
+          ],
+        ),
       ),
     ),
   );

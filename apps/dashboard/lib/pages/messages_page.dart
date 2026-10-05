@@ -410,7 +410,7 @@ class _MessageRow extends StatelessWidget {
       FirestoreService.markMessageRead(id).catchError((_) {});
     }
     if (!context.mounted) return;
-    showDialog(
+    showContentDialog(
       useRootNavigator: false,
       context: context,
       builder: (_) => _MessageDetailDialog(id: id, data: data),
@@ -430,7 +430,7 @@ class _MessageRow extends StatelessWidget {
   }
 
   void _confirmDelete(BuildContext context) {
-    showDialog(
+    showContentDialog(
       useRootNavigator: false,
       context: context,
       builder: (ctx) => AlertDialog(
@@ -604,7 +604,7 @@ class _MessageDetailDialog extends StatelessWidget {
                     ElevatedButton.icon(
                       onPressed: () {
                         Navigator.pop(context);
-                        showDialog(
+                        showContentDialog(
                           useRootNavigator: false,
                           context: context,
                           builder: (_) => _ReplyDialog(
@@ -647,7 +647,7 @@ class _MessageDetailDialog extends StatelessWidget {
                     ),
                   TextButton.icon(
                     onPressed: () async {
-                      final confirmed = await showDialog<bool>(
+                      final confirmed = await showContentDialog<bool>(
                         useRootNavigator: false,
                         context: context,
                         builder: (dialog) => AlertDialog(

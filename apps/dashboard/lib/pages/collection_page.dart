@@ -106,7 +106,7 @@ class _CollectionPageState extends State<CollectionPage> {
   }
 
   Future<void> delete(MapEntry<String, Map<String, dynamic>> entry) async {
-    final confirmed = await showDialog<bool>(
+    final confirmed = await showContentDialog<bool>(
       useRootNavigator: false,
       context: context,
       builder: (ctx) => AlertDialog(
@@ -157,7 +157,7 @@ class _CollectionPageState extends State<CollectionPage> {
     }
   }
 
-  void preview(MapEntry<String, Map<String, dynamic>> e) => showDialog(
+  void preview(MapEntry<String, Map<String, dynamic>> e) => showContentDialog(
     useRootNavigator: false,
     context: context,
     builder: (ctx) => ContentDialog(

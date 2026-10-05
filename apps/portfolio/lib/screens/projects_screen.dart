@@ -95,10 +95,7 @@ class _ProjectsScreenState extends State<ProjectsScreen> {
                           ),
                         ),
                         const SizedBox(height: 30),
-                        AnimatedSwitcher(
-                          duration: Design.reduced(context)
-                              ? Duration.zero
-                              : Design.fast,
+                        MotionSwap(
                           child: filtered.isEmpty
                               ? StateMessage(
                                   key: ValueKey(category),
