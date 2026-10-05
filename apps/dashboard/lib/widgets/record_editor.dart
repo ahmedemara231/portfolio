@@ -2,18 +2,24 @@ import 'package:core/core.dart';
 import 'package:flutter/material.dart';
 import '../content_schema.dart';
 import '../services/media_upload.dart';
+import 'studio_widgets.dart';
+import 'project_reference_picker.dart';
 
 class RecordEditor extends StatefulWidget {
   final ContentSchema schema;
   final String? id;
   final Map<String, dynamic> initial;
   final bool profile;
+  final String? initialGroup;
+  final List<Map<String, dynamic>> profileIndicators;
   const RecordEditor({
     super.key,
     required this.schema,
     this.id,
     this.initial = const {},
     this.profile = false,
+    this.initialGroup,
+    this.profileIndicators = const [],
   });
   @override
   State<RecordEditor> createState() => _RecordEditorState();
@@ -26,10 +32,34 @@ class _RecordEditorState extends State<RecordEditor> {
   late String recordId;
   bool dirty = false, saving = false, uploading = false;
   String? error;
+  final scroll = ScrollController();
+  final groupKeys = <String, GlobalKey>{};
+  String selectedGroup = '';
+  List<String> get groups {
+    final available = widget.schema.fields.map((f) => f.group).toSet();
+    if (widget.schema.collection == 'projects') {
+      return [
+        'The essentials',
+        'Imagery',
+        'Case study',
+        'Links',
+        'Visibility & selection',
+        'Search & sharing',
+        'Existing content',
+      ].where(available.contains).toList();
+    }
+    return available.toList();
+  }
+
   @override
   void initState() {
     super.initState();
     values = {...widget.initial};
+    if (widget.profile &&
+        !values.containsKey('professionalTitle') &&
+        values.containsKey('badge')) {
+      values['professionalTitle'] = values['badge'];
+    }
     recordId = widget.id ?? 'entry-${DateTime.now().microsecondsSinceEpoch}';
     if (!widget.profile) {
       values.putIfAbsent(
@@ -77,7 +107,29 @@ class _RecordEditorState extends State<RecordEditor> {
     }
     if (!widget.profile && !controllers.containsKey('status')) {
       controllers['status'] = TextEditingController(text: values['status']);
+      controllers['status']!.addListener(changed);
     }
+    for (final group in groups) {
+      groupKeys[group] = GlobalKey();
+    }
+    selectedGroup = widget.initialGroup ?? groups.first;
+    if (widget.initialGroup != null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) jumpToGroup(widget.initialGroup!);
+      });
+    }
+  }
+
+  void jumpToGroup(String group) {
+    final target = groupKeys[group]?.currentContext;
+    if (target == null) return;
+    setState(() => selectedGroup = group);
+    Scrollable.ensureVisible(
+      target,
+      alignment: 0,
+      duration: Design.reduced(context) ? Duration.zero : Design.motion,
+      curve: Design.ease,
+    );
   }
 
   void changed() {
@@ -89,6 +141,7 @@ class _RecordEditorState extends State<RecordEditor> {
   @override
   void dispose() {
     protectUnsavedChanges(false);
+    scroll.dispose();
     for (final c in controllers.values) {
       c.dispose();
     }
@@ -139,7 +192,18 @@ class _RecordEditorState extends State<RecordEditor> {
       if (f.kind == FieldKind.toggle) {
         result[f.key] = values[f.key] == true;
       } else if (f.kind == FieldKind.gallery || f.kind == FieldKind.links) {
-        result[f.key] = values[f.key] ?? [];
+        result[f.key] = (values[f.key] as List? ?? []).map((item) {
+          final entry = Map<String, dynamic>.from(item as Map);
+          for (final key in ['url', 'alt', 'label', 'thumbnail']) {
+            if (entry[key] is String) {
+              entry[key] = (entry[key] as String).trim();
+            }
+          }
+          if ((entry['thumbnail'] ?? '').toString().isEmpty) {
+            entry.remove('thumbnail');
+          }
+          return entry;
+        }).toList();
       } else if (f.kind == FieldKind.lines) {
         result[f.key] = controllers[f.key]!.text
             .split('\n')
@@ -200,7 +264,17 @@ class _RecordEditorState extends State<RecordEditor> {
   }
 
   Future<void> save() async {
-    if (saving || uploading || !form.currentState!.validate()) return;
+    if (saving || uploading) return;
+    final invalid = form.currentState!.validateGranularly();
+    if (invalid.isNotEmpty) {
+      Scrollable.ensureVisible(
+        invalid.first.context,
+        alignment: .2,
+        duration: Design.reduced(context) ? Duration.zero : Design.motion,
+        curve: Design.ease,
+      );
+      return;
+    }
     FocusScope.of(context).unfocus();
     final result = data();
     final start = (result['startDate'] ?? '').toString(),
@@ -226,6 +300,7 @@ class _RecordEditorState extends State<RecordEditor> {
       saving = true;
       error = null;
     });
+    ScaffoldMessenger.of(context).hideCurrentSnackBar();
     try {
       if (widget.schema.collection == 'projects') {
         final records = await FirestoreService.collectionStreamWithIds(
@@ -292,6 +367,13 @@ class _RecordEditorState extends State<RecordEditor> {
 
   String? validate(ContentField field, String? input) {
     final value = input?.trim() ?? '';
+    if (field.group == 'Existing content') {
+      final initial = widget.initial[field.key];
+      final original = field.kind == FieldKind.lines
+          ? (initial as List? ?? []).join('\n')
+          : initial?.toString() ?? '';
+      if (value == original.trim()) return null;
+    }
     if (field.required && value.isEmpty) return '${field.label} is required.';
     if (value.isEmpty) return null;
     if (field.key == 'title' && value.length > 160) {
@@ -373,43 +455,116 @@ class _RecordEditorState extends State<RecordEditor> {
   }
 
   void preview() {
-    final project = ProjectModel.fromMap(data(), recordId);
-    showContentDialog(
-      useRootNavigator: false,
-      context: context,
-      builder: (ctx) => ContentDialog(
-        label: 'Project preview',
-        insetPadding: const EdgeInsets.all(12),
-        child: Column(
-          children: [
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              child: Row(
-                children: [
-                  const Expanded(
-                    child: Text(
-                      'Project preview',
-                      style: TextStyle(fontWeight: FontWeight.w700),
+    if (widget.profile) {
+      showStudioProfilePreview(
+        context,
+        data(),
+        indicators: widget.profileIndicators,
+        metadata: widget.schema.singular == 'metadata',
+      );
+    } else if (widget.schema.collection == 'projects') {
+      showStudioProjectPreview(context, ProjectModel.fromMap(data(), recordId));
+    } else {
+      final value = data();
+      showContentDialog(
+        context: context,
+        useRootNavigator: false,
+        builder: (ctx) => ContentDialog(
+          label: 'Entry preview',
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 680),
+            child: SingleChildScrollView(
+              child: Padding(
+                padding: const EdgeInsets.all(28),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Row(
+                      children: [
+                        const Expanded(
+                          child: Eyebrow('Private content preview'),
+                        ),
+                        IconButton(
+                          tooltip: 'Close preview',
+                          onPressed: () => Navigator.pop(ctx),
+                          icon: const Icon(Icons.close),
+                        ),
+                      ],
                     ),
-                  ),
-                  IconButton(
-                    tooltip: 'Close preview',
-                    onPressed: () => Navigator.pop(ctx),
-                    icon: const Icon(Icons.close),
-                  ),
-                ],
+                    const SizedBox(height: 24),
+                    Text(
+                      '${value[widget.schema.nameKey] ?? ''}',
+                      style: Design.pageType,
+                    ),
+                    if (widget.schema.collection == 'stats')
+                      Text(
+                        '${value['value'] ?? ''}',
+                        style: const TextStyle(
+                          fontSize: 44,
+                          fontWeight: FontWeight.w700,
+                          color: Design.accent,
+                        ),
+                      ),
+                    if (value['title'] != null &&
+                        widget.schema.nameKey != 'title') ...[
+                      const SizedBox(height: 10),
+                      Text('${value['title']}', style: Design.groupType),
+                    ],
+                    if ((value['period'] ?? '').toString().isNotEmpty) ...[
+                      const SizedBox(height: 12),
+                      Text(
+                        '${value['period']}',
+                        style: Design.captionType.copyWith(
+                          color: Design.accent,
+                        ),
+                      ),
+                    ],
+                    if ((value['institution'] ?? '').toString().isNotEmpty) ...[
+                      const SizedBox(height: 12),
+                      Text('${value['institution']}', style: Design.groupType),
+                    ],
+                    if ((value['description'] ?? '').toString().isNotEmpty) ...[
+                      const SizedBox(height: 20),
+                      Text('${value['description']}', style: Design.bodyType),
+                    ],
+                    for (final item in value['achievements'] as List? ?? [])
+                      Padding(
+                        padding: const EdgeInsets.only(top: 12),
+                        child: Text('• $item', style: Design.bodyType),
+                      ),
+                    if ((value['items'] as List? ?? []).isNotEmpty) ...[
+                      const SizedBox(height: 20),
+                      Wrap(
+                        spacing: 8,
+                        runSpacing: 8,
+                        children: [
+                          for (final item in value['items'] as List)
+                            Chip(label: Text(item.toString())),
+                        ],
+                      ),
+                    ],
+                    if ((value['url'] ?? '').toString().isNotEmpty) ...[
+                      const SizedBox(height: 20),
+                      SelectableText(
+                        '${value['url']}',
+                        style: Design.captionType.copyWith(
+                          color: Design.accent,
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
               ),
             ),
-            Expanded(child: ProjectDetail(project: project, preview: true)),
-          ],
+          ),
         ),
-      ),
-    );
+      );
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    final groups = widget.schema.fields.map((f) => f.group).toSet();
     final status = saving
         ? 'Saving…'
         : dirty
@@ -424,7 +579,6 @@ class _RecordEditorState extends State<RecordEditor> {
       },
       child: Scaffold(
         appBar: AppBar(
-          backgroundColor: Design.paper,
           leading: IconButton(
             tooltip: 'Close editor',
             onPressed: saving || uploading ? null : close,
@@ -434,11 +588,11 @@ class _RecordEditorState extends State<RecordEditor> {
             widget.profile
                 ? 'Edit ${widget.schema.singular}'
                 : '${widget.id == null ? 'New' : 'Edit'} ${widget.schema.singular}',
-            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
+            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
           ),
           actions: [
             Padding(
-              padding: const EdgeInsets.only(right: 16),
+              padding: const EdgeInsets.only(right: 12),
               child: Semantics(
                 liveRegion: true,
                 child: MotionSwap(
@@ -457,58 +611,173 @@ class _RecordEditorState extends State<RecordEditor> {
         ),
         body: Form(
           key: form,
-          child: SingleChildScrollView(
-            child: Center(
-              child: ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 850),
-                child: Padding(
-                  padding: EdgeInsets.all(
-                    MediaQuery.sizeOf(context).width < 600 ? 20 : 40,
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      Text(
-                        widget.schema.description,
-                        style: const TextStyle(
-                          color: Design.muted,
-                          height: 1.7,
+          child: LayoutBuilder(
+            builder: (context, constraints) => Row(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                if (constraints.maxWidth >= 1100) ...[
+                  SizedBox(
+                    width: 224,
+                    child: SingleChildScrollView(
+                      child: Padding(
+                        padding: const EdgeInsets.fromLTRB(16, 28, 16, 20),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            const Padding(
+                              padding: EdgeInsets.fromLTRB(12, 0, 12, 18),
+                              child: Eyebrow(
+                                'In this editor',
+                                color: Design.muted,
+                              ),
+                            ),
+                            for (var index = 0; index < groups.length; index++)
+                              ListTile(
+                                selected: selectedGroup == groups[index],
+                                selectedColor: Design.accent,
+                                selectedTileColor: Design.tint,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                                leading: Text(
+                                  '${index + 1}'.padLeft(2, '0'),
+                                  style: Design.captionType,
+                                ),
+                                title: Text(
+                                  groups[index],
+                                  style: const TextStyle(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                                onTap: () => jumpToGroup(groups[index]),
+                              ),
+                          ],
                         ),
                       ),
-                      const SizedBox(height: 32),
-                      if (!widget.profile &&
-                          !widget.schema.fields.any(
-                            (f) => f.key == 'status',
-                          )) ...[
-                        input(
-                          const ContentField(
-                            'status',
-                            'Publication',
-                            kind: FieldKind.select,
-                            choices: ['draft', 'published'],
+                    ),
+                  ),
+                  const VerticalDivider(width: 1),
+                ],
+                Expanded(
+                  child: SingleChildScrollView(
+                    controller: scroll,
+                    child: Center(
+                      child: ConstrainedBox(
+                        constraints: const BoxConstraints(maxWidth: 920),
+                        child: Padding(
+                          padding: EdgeInsets.all(
+                            constraints.maxWidth < 600 ? 20 : 36,
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            children: [
+                              StudioPageHeader(
+                                eyebrow: widget.profile
+                                    ? 'Your public presence'
+                                    : widget.schema.title,
+                                title: widget.schema.singular == 'metadata'
+                                    ? widget.schema.title
+                                    : (controllers[widget.schema.nameKey]
+                                                  ?.text ??
+                                              values[widget.schema.nameKey]
+                                                  ?.toString() ??
+                                              '')
+                                          .isNotEmpty
+                                    ? (controllers[widget.schema.nameKey]
+                                              ?.text ??
+                                          values[widget.schema.nameKey]
+                                              .toString())
+                                    : 'New ${widget.schema.singular}',
+                                description: widget.schema.description,
+                              ),
+                              const SizedBox(height: 24),
+                              if (widget.profile ||
+                                  widget.schema.collection == 'projects') ...[
+                                summaryPreview(),
+                                const SizedBox(height: 28),
+                              ],
+                              if (constraints.maxWidth < 1100) ...[
+                                Wrap(
+                                  spacing: 8,
+                                  runSpacing: 8,
+                                  children: [
+                                    for (final group in groups)
+                                      OutlinedButton(
+                                        style: OutlinedButton.styleFrom(
+                                          minimumSize: const Size(0, 48),
+                                          padding: const EdgeInsets.symmetric(
+                                            horizontal: 14,
+                                            vertical: 12,
+                                          ),
+                                          backgroundColor:
+                                              selectedGroup == group
+                                              ? Design.tint
+                                              : Design.surface,
+                                          side: BorderSide(
+                                            color: selectedGroup == group
+                                                ? Design.accent
+                                                : Design.line,
+                                          ),
+                                        ),
+                                        onPressed: () => jumpToGroup(group),
+                                        child: Text(
+                                          group,
+                                          style: const TextStyle(fontSize: 11),
+                                        ),
+                                      ),
+                                  ],
+                                ),
+                                const SizedBox(height: 28),
+                              ],
+                              if (!widget.profile &&
+                                  !widget.schema.fields.any(
+                                    (f) => f.key == 'status',
+                                  )) ...[
+                                StudioPanel(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.stretch,
+                                    children: [
+                                      const Text(
+                                        'Visibility',
+                                        style: Design.groupType,
+                                      ),
+                                      const SizedBox(height: 16),
+                                      input(
+                                        const ContentField(
+                                          'status',
+                                          'Publication',
+                                          kind: FieldKind.select,
+                                          choices: ['draft', 'published'],
+                                          help:
+                                              'Drafts are private. Published entries appear on your portfolio.',
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                const SizedBox(height: 24),
+                              ],
+                              for (
+                                var index = 0;
+                                index < groups.length;
+                                index++
+                              )
+                                Padding(
+                                  key: groupKeys[groups[index]],
+                                  padding: const EdgeInsets.only(bottom: 24),
+                                  child: groupSection(groups[index], index),
+                                ),
+                              const SizedBox(height: 12),
+                            ],
                           ),
                         ),
-                        const SizedBox(height: 24),
-                      ],
-                      for (final group in groups) ...[
-                        const Divider(),
-                        const SizedBox(height: 24),
-                        Text(group, style: Design.groupType),
-                        const SizedBox(height: 24),
-                        for (final f in widget.schema.fields.where(
-                          (f) => f.group == group,
-                        ))
-                          Padding(
-                            padding: const EdgeInsets.only(bottom: 24),
-                            child: input(f),
-                          ),
-                        const SizedBox(height: 12),
-                      ],
-                      const SizedBox(height: 24),
-                    ],
+                      ),
+                    ),
                   ),
                 ),
-              ),
+              ],
             ),
           ),
         ),
@@ -537,17 +806,27 @@ class _RecordEditorState extends State<RecordEditor> {
                       ),
                     ),
                   ),
+                if (MediaQuery.sizeOf(context).width >= 760)
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 10),
+                    child: Text(
+                      widget.profile ||
+                              controllers['status']?.text == 'published'
+                          ? 'Saved changes update your public portfolio.'
+                          : 'This draft stays private until you publish it.',
+                      style: Design.captionType,
+                    ),
+                  ),
                 Wrap(
                   alignment: WrapAlignment.end,
                   spacing: 12,
                   runSpacing: 12,
                   children: [
-                    if (widget.schema.collection == 'projects')
-                      OutlinedButton.icon(
-                        onPressed: saving ? null : preview,
-                        icon: const Icon(Icons.visibility_outlined, size: 18),
-                        label: const Text('Preview'),
-                      ),
+                    OutlinedButton.icon(
+                      onPressed: saving || uploading ? null : preview,
+                      icon: const Icon(Icons.visibility_outlined, size: 18),
+                      label: const Text('Preview'),
+                    ),
                     TextButton(
                       onPressed: saving || uploading ? null : close,
                       child: const Text('Cancel'),
@@ -593,7 +872,192 @@ class _RecordEditorState extends State<RecordEditor> {
     );
   }
 
+  Widget summaryPreview() {
+    final result = data();
+    final isProject = widget.schema.collection == 'projects';
+    final project = isProject ? ProjectModel.fromMap(result, recordId) : null;
+    final copy = Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Eyebrow('On your portfolio', color: Design.muted),
+        const SizedBox(height: 12),
+        Text(
+          isProject
+              ? project!.title
+              : widget.schema.singular == 'metadata'
+              ? '${result['seoTitle'] ?? ''}'
+              : '${result['heroTitle'] ?? ''}',
+          style: const TextStyle(
+            fontSize: 23,
+            height: 1.25,
+            fontWeight: FontWeight.w600,
+            color: Design.accent,
+          ),
+        ),
+        const SizedBox(height: 10),
+        Text(
+          isProject
+              ? project!.description
+              : '${result[widget.schema.singular == 'metadata' ? 'seoDescription' : 'heroDescription'] ?? ''}',
+          maxLines: 3,
+          overflow: TextOverflow.ellipsis,
+          style: Design.captionType,
+        ),
+        const SizedBox(height: 10),
+        TextButton.icon(
+          onPressed: preview,
+          icon: const Icon(Icons.north_east, size: 15),
+          iconAlignment: IconAlignment.end,
+          label: Text(
+            isProject
+                ? 'Preview case study'
+                : widget.schema.singular == 'metadata'
+                ? 'Preview sharing'
+                : 'Preview introduction',
+          ),
+        ),
+      ],
+    );
+    return StudioPanel(
+      color: Design.tint,
+      padding: const EdgeInsets.all(20),
+      child: LayoutBuilder(
+        builder: (context, c) {
+          if (project == null || c.maxWidth < 500) return copy;
+          return Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              SizedBox(
+                width: 164,
+                child: ProjectMedia(project: project, compact: true),
+              ),
+              const SizedBox(width: 24),
+              Expanded(child: copy),
+            ],
+          );
+        },
+      ),
+    );
+  }
+
+  Widget groupSection(String group, int index) {
+    final fields = widget.schema.fields.where((f) => f.group == group).toList();
+    if (group == 'Existing content') {
+      return StudioPanel(
+        padding: EdgeInsets.zero,
+        child: ExpansionTile(
+          maintainState: true,
+          title: const Text(
+            'Existing content',
+            style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+          ),
+          subtitle: const Text(
+            'Preserved fields from your earlier portfolio.',
+            style: Design.captionType,
+          ),
+          childrenPadding: const EdgeInsets.all(24),
+          children: [fieldsLayout(fields)],
+        ),
+      );
+    }
+    return StudioPanel(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Padding(
+                padding: const EdgeInsets.only(top: 4),
+                child: Text(
+                  '${index + 1}'.padLeft(2, '0'),
+                  style: Design.captionType.copyWith(color: Design.accent),
+                ),
+              ),
+              const SizedBox(width: 14),
+              Expanded(child: Text(group, style: Design.groupType)),
+            ],
+          ),
+          const SizedBox(height: 24),
+          fieldsLayout(fields),
+        ],
+      ),
+    );
+  }
+
+  Widget fieldsLayout(List<ContentField> fields) => LayoutBuilder(
+    builder: (context, constraints) {
+      final rows = <Widget>[];
+      var index = 0;
+      bool short(ContentField f) =>
+          {
+            FieldKind.text,
+            FieldKind.email,
+            FieldKind.month,
+            FieldKind.number,
+            FieldKind.select,
+          }.contains(f.kind) &&
+          f.key != 'period';
+      while (index < fields.length) {
+        final field = fields[index];
+        if (constraints.maxWidth >= 620 &&
+            index + 1 < fields.length &&
+            short(field) &&
+            short(fields[index + 1])) {
+          rows.add(
+            Padding(
+              padding: const EdgeInsets.only(bottom: 24),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(child: input(field)),
+                  const SizedBox(width: 20),
+                  Expanded(child: input(fields[index + 1])),
+                ],
+              ),
+            ),
+          );
+          index += 2;
+        } else {
+          rows.add(
+            Padding(
+              padding: const EdgeInsets.only(bottom: 24),
+              child: input(field),
+            ),
+          );
+          index++;
+        }
+      }
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: rows,
+      );
+    },
+  );
+
   Widget input(ContentField f) {
+    if (f.key == 'projectIds') {
+      return AbsorbPointer(
+        absorbing: saving,
+        child: ExcludeFocus(
+          excluding: saving,
+          child: ProjectReferencePicker(controller: controllers[f.key]!),
+        ),
+      );
+    }
+    if (f.key == 'period' &&
+        controllers['startDate']?.text.trim().isNotEmpty == true) {
+      return InputDecorator(
+        decoration: const InputDecoration(
+          labelText: 'Date shown on portfolio',
+          helperText: 'Generated from the start and end months.',
+        ),
+        child: Text(
+          (data()['period'] ?? '').toString(),
+          style: const TextStyle(fontSize: 14),
+        ),
+      );
+    }
     if (f.kind == FieldKind.toggle) {
       return SwitchListTile.adaptive(
         contentPadding: EdgeInsets.zero,
@@ -608,10 +1072,12 @@ class _RecordEditorState extends State<RecordEditor> {
                 style: const TextStyle(fontSize: 12, color: Design.muted),
               ),
         value: values[f.key] == true,
-        onChanged: (v) {
-          values[f.key] = v;
-          changed();
-        },
+        onChanged: saving
+            ? null
+            : (v) {
+                values[f.key] = v;
+                changed();
+              },
       );
     }
     if (f.kind == FieldKind.gallery || f.kind == FieldKind.links) {
@@ -627,12 +1093,14 @@ class _RecordEditorState extends State<RecordEditor> {
           changed();
         },
         onBusy: (busy) => setState(() => uploading = busy),
+        enabled: !saving,
       );
     }
     if (f.kind == FieldKind.select) {
       final current = controllers[f.key]!.text;
       return DropdownButtonFormField<String>(
         initialValue: f.choices.contains(current) ? current : f.choices.first,
+        isExpanded: true,
         decoration: InputDecoration(
           labelText: f.label,
           helperText: f.help.isEmpty ? null : f.help,
@@ -648,13 +1116,16 @@ class _RecordEditorState extends State<RecordEditor> {
               ),
             )
             .toList(),
-        onChanged: (s) {
-          controllers[f.key]!.text = s ?? '';
-        },
+        onChanged: saving
+            ? null
+            : (s) {
+                controllers[f.key]!.text = s ?? '';
+              },
       );
     }
     final text = TextFormField(
       controller: controllers[f.key],
+      enabled: !saving && !(f.key == 'endDate' && values['current'] == true),
       maxLines: {FieldKind.multiline, FieldKind.lines}.contains(f.kind) ? 4 : 1,
       keyboardType: f.kind == FieldKind.number
           ? TextInputType.number
@@ -729,6 +1200,7 @@ class MediaListEditor extends StatefulWidget {
   final List<Map<String, dynamic>> items;
   final ValueChanged<List<Map<String, dynamic>>> onChanged;
   final ValueChanged<bool> onBusy;
+  final bool enabled;
   const MediaListEditor({
     super.key,
     required this.field,
@@ -736,6 +1208,7 @@ class MediaListEditor extends StatefulWidget {
     required this.items,
     required this.onChanged,
     required this.onBusy,
+    this.enabled = true,
   });
   @override
   State<MediaListEditor> createState() => _MediaListEditorState();
@@ -783,180 +1256,335 @@ class _MediaListEditorState extends State<MediaListEditor> {
     }
   }
 
-  @override
-  Widget build(BuildContext context) {
-    final gallery = widget.field.kind == FieldKind.gallery;
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        Text(
-          widget.field.label,
-          style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
+  void remove(int index, bool gallery) {
+    final removed = Map<String, dynamic>.from(widget.items[index]);
+    widget.onChanged([...widget.items]..removeAt(index));
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('${gallery ? 'Screen' : 'Link'} removed from this edit.'),
+        action: SnackBarAction(
+          label: 'Undo',
+          onPressed: () {
+            if (!mounted || !widget.enabled) return;
+            final items = [...widget.items];
+            items.insert(index > items.length ? items.length : index, removed);
+            widget.onChanged(items);
+          },
         ),
-        const SizedBox(height: 8),
-        Text(
-          gallery
-              ? 'Use genuine app screens. Add a description, then move screens into the order you want.'
-              : widget.field.help,
-          style: const TextStyle(
-            color: Design.muted,
-            fontSize: 12,
-            height: 1.7,
-          ),
-        ),
-        const SizedBox(height: 16),
-        for (var i = 0; i < widget.items.length; i++)
-          Container(
-            key: ValueKey(widget.items[i]['mediaId'] ?? 'initial-$i'),
-            margin: const EdgeInsets.only(bottom: 16),
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              border: Border.all(color: Design.line),
-              borderRadius: BorderRadius.circular(10),
-            ),
+      ),
+    );
+  }
+
+  void inspect(int index) {
+    final item = widget.items[index];
+    showContentDialog(
+      context: context,
+      useRootNavigator: false,
+      builder: (ctx) => ContentDialog(
+        label: 'Screenshot preview',
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 860),
+          child: SizedBox(
+            height: MediaQuery.sizeOf(ctx).height * .82,
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                Row(
-                  children: [
-                    Text(
-                      '${gallery ? 'Screen' : 'Link'} ${i + 1}',
-                      style: const TextStyle(fontWeight: FontWeight.w600),
-                    ),
-                    const Spacer(),
-                    IconButton(
-                      tooltip: 'Move ${i + 1} up',
-                      onPressed: i == 0 ? null : () => move(i, -1),
-                      icon: const Icon(Icons.arrow_upward, size: 18),
-                    ),
-                    IconButton(
-                      tooltip: 'Move ${i + 1} down',
-                      onPressed: i == widget.items.length - 1
-                          ? null
-                          : () => move(i, 1),
-                      icon: const Icon(Icons.arrow_downward, size: 18),
-                    ),
-                    IconButton(
-                      tooltip: 'Remove ${gallery ? 'screen' : 'link'} ${i + 1}',
-                      onPressed: () =>
-                          widget.onChanged([...widget.items]..removeAt(i)),
-                      icon: const Icon(Icons.close, size: 18),
-                    ),
-                  ],
+                Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          (item['alt'] ?? '').toString().isEmpty
+                              ? 'Screen ${index + 1}'
+                              : item['alt'].toString(),
+                          style: const TextStyle(fontWeight: FontWeight.w600),
+                        ),
+                      ),
+                      IconButton(
+                        tooltip: 'Close screenshot preview',
+                        onPressed: () => Navigator.pop(ctx),
+                        icon: const Icon(Icons.close),
+                      ),
+                    ],
+                  ),
                 ),
-                if (gallery) ...[
-                  const SizedBox(height: 12),
-                  SizedBox(
-                    height: 180,
+                Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.all(20),
                     child: PortfolioImage(
-                      url:
-                          (widget.items[i]['thumbnail'] ??
-                                  widget.items[i]['url'] ??
-                                  '')
-                              .toString(),
-                      alt: (widget.items[i]['alt'] ?? 'Media preview')
-                          .toString(),
+                      url: '${item['url'] ?? ''}',
+                      alt: '${item['alt'] ?? ''}',
+                      thumbnail: false,
                     ),
                   ),
-                  const SizedBox(height: 16),
-                ],
-                if (!(widget.items[i]['url'] ?? '').toString().startsWith(
-                  'data:',
-                ))
-                  TextFormField(
-                    initialValue: (widget.items[i]['url'] ?? '').toString(),
-                    decoration: InputDecoration(
-                      labelText: gallery ? 'Image URL' : 'Destination URL',
-                    ),
-                    onChanged: (v) => change(i, 'url', v),
-                    validator: (value) {
-                      final u = Uri.tryParse(value ?? '');
-                      if (value == null || value.trim().isEmpty) {
-                        return 'Add a URL or remove this item.';
-                      }
-                      if (gallery &&
-                          (value.startsWith('packages/') ||
-                              value.startsWith('storage://'))) {
-                        return null;
-                      }
-                      return u != null &&
-                              {'https', 'http'}.contains(u.scheme) &&
-                              u.host.isNotEmpty
-                          ? null
-                          : 'Use a complete HTTP or HTTPS URL.';
-                    },
-                  ),
-                const SizedBox(height: 16),
-                TextFormField(
-                  initialValue:
-                      (widget.items[i][gallery ? 'alt' : 'label'] ?? '')
-                          .toString(),
-                  decoration: InputDecoration(
-                    labelText: gallery
-                        ? 'Meaningful screen description *'
-                        : 'Link label *',
-                  ),
-                  onChanged: (v) => change(i, gallery ? 'alt' : 'label', v),
-                  validator: (v) => v == null || v.trim().isEmpty
-                      ? 'Add a description.'
-                      : null,
                 ),
-                if (gallery &&
-                    !(widget.items[i]['thumbnail'] ?? '').toString().startsWith(
-                      'data:',
-                    )) ...[
-                  const SizedBox(height: 12),
-                  TextFormField(
-                    initialValue: (widget.items[i]['thumbnail'] ?? '')
-                        .toString(),
-                    decoration: const InputDecoration(
-                      labelText: 'Optimized thumbnail URL (optional)',
-                      helperText:
-                          'Use a smaller version of this same screenshot for previews.',
-                    ),
-                    onChanged: (v) => change(i, 'thumbnail', v),
-                  ),
-                ],
               ],
             ),
           ),
-        if (widget.items.isEmpty)
-          const Padding(
-            padding: EdgeInsets.only(bottom: 16),
-            child: Text(
-              'No entries yet.',
-              style: TextStyle(color: Design.muted),
-            ),
-          ),
-        Wrap(
-          spacing: 12,
-          runSpacing: 8,
+        ),
+      ),
+    );
+  }
+
+  String? mediaUrl(String? input, {bool required = true, bool gallery = true}) {
+    final value = input?.trim() ?? '';
+    if (value.isEmpty) {
+      return required ? 'Add a URL or remove this item.' : null;
+    }
+    if (gallery &&
+        (value.startsWith('packages/') ||
+            value.startsWith('assets/') ||
+            value.startsWith('/') ||
+            value.startsWith('storage://') ||
+            value.startsWith('data:image/png;base64,') ||
+            value.startsWith('data:image/jpeg;base64,') ||
+            value.startsWith('data:image/webp;base64,'))) {
+      return null;
+    }
+    final uri = Uri.tryParse(value);
+    return uri != null &&
+            {'https', 'http'}.contains(uri.scheme) &&
+            uri.host.isNotEmpty
+        ? null
+        : 'Use a complete HTTP or HTTPS URL.';
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final gallery = widget.field.kind == FieldKind.gallery;
+    return AbsorbPointer(
+      absorbing: !widget.enabled,
+      child: ExcludeFocus(
+        excluding: !widget.enabled,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            if (gallery)
-              OutlinedButton.icon(
-                onPressed: busy ? null : upload,
-                icon: const Icon(Icons.upload_outlined, size: 18),
-                label: Text(busy ? 'Uploading…' : 'Upload screenshot'),
-              ),
-            TextButton.icon(
-              onPressed: busy
-                  ? null
-                  : () => widget.onChanged([
-                      ...widget.items,
-                      {
-                        'mediaId':
-                            'media-${DateTime.now().microsecondsSinceEpoch}',
-                        'url': '',
-                        gallery ? 'alt' : 'label': '',
-                      },
-                    ]),
-              icon: const Icon(Icons.add, size: 18),
-              label: Text(gallery ? 'Add image URL' : 'Add link'),
+            Text(
+              widget.field.label,
+              style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
             ),
+            const SizedBox(height: 8),
+            Text(
+              gallery
+                  ? 'The first two screens form project previews. Add genuine app imagery and descriptions, then arrange it with the arrows.'
+                  : widget.field.help,
+              style: Design.captionType,
+            ),
+            const SizedBox(height: 18),
+            for (var index = 0; index < widget.items.length; index++)
+              Padding(
+                key: ValueKey(
+                  widget.items[index]['mediaId'] ?? 'initial-$index',
+                ),
+                padding: const EdgeInsets.only(bottom: 18),
+                child: StudioPanel(
+                  padding: const EdgeInsets.all(16),
+                  color: Design.paper,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      Wrap(
+                        alignment: WrapAlignment.spaceBetween,
+                        crossAxisAlignment: WrapCrossAlignment.center,
+                        spacing: 8,
+                        runSpacing: 4,
+                        children: [
+                          Text(
+                            '${gallery && index == 0 ? 'Cover · ' : ''}${gallery ? 'Screen' : 'Link'} ${index + 1}',
+                            style: const TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              IconButton(
+                                tooltip: 'Move ${index + 1} up',
+                                onPressed: busy || index == 0
+                                    ? null
+                                    : () => move(index, -1),
+                                icon: const Icon(Icons.arrow_upward, size: 18),
+                              ),
+                              IconButton(
+                                tooltip: 'Move ${index + 1} down',
+                                onPressed:
+                                    busy || index == widget.items.length - 1
+                                    ? null
+                                    : () => move(index, 1),
+                                icon: const Icon(
+                                  Icons.arrow_downward,
+                                  size: 18,
+                                ),
+                              ),
+                              IconButton(
+                                tooltip:
+                                    'Remove ${gallery ? 'screen' : 'link'} ${index + 1}',
+                                onPressed: busy
+                                    ? null
+                                    : () => remove(index, gallery),
+                                icon: const Icon(Icons.close, size: 18),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 16),
+                      LayoutBuilder(
+                        builder: (context, c) {
+                          final fields = itemFields(index, gallery);
+                          if (!gallery) return fields;
+                          final item = widget.items[index];
+                          final thumbnail = (item['thumbnail'] ?? '')
+                              .toString();
+                          final image = Semantics(
+                            button: true,
+                            label: 'Preview screen ${index + 1}',
+                            child: MotionSurface(
+                              color: Design.tint,
+                              borderRadius: BorderRadius.circular(10),
+                              onTap: () => inspect(index),
+                              child: SizedBox(
+                                height: 230,
+                                child: Padding(
+                                  padding: const EdgeInsets.all(8),
+                                  child: PortfolioImage(
+                                    url: thumbnail.isEmpty
+                                        ? '${item['url'] ?? ''}'
+                                        : thumbnail,
+                                    alt:
+                                        '${item['alt'] ?? 'Screenshot preview'}',
+                                  ),
+                                ),
+                              ),
+                            ),
+                          );
+                          if (c.maxWidth < 580) {
+                            return Column(
+                              crossAxisAlignment: CrossAxisAlignment.stretch,
+                              children: [
+                                image,
+                                const SizedBox(height: 18),
+                                fields,
+                              ],
+                            );
+                          }
+                          return Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              SizedBox(width: 150, child: image),
+                              const SizedBox(width: 24),
+                              Expanded(child: fields),
+                            ],
+                          );
+                        },
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            if (widget.items.isEmpty)
+              Padding(
+                padding: const EdgeInsets.only(bottom: 18),
+                child: Text(
+                  gallery
+                      ? 'No screenshots yet. Upload an app screen or add its image URL.'
+                      : 'No additional links yet.',
+                  style: Design.captionType,
+                ),
+              ),
+            Wrap(
+              spacing: 12,
+              runSpacing: 8,
+              children: [
+                if (gallery)
+                  OutlinedButton.icon(
+                    onPressed: busy ? null : upload,
+                    icon: const Icon(Icons.upload_outlined, size: 18),
+                    label: Text(busy ? 'Uploading…' : 'Upload screenshot'),
+                  ),
+                TextButton.icon(
+                  onPressed: busy
+                      ? null
+                      : () => widget.onChanged([
+                          ...widget.items,
+                          {
+                            'mediaId':
+                                'media-${DateTime.now().microsecondsSinceEpoch}',
+                            'url': '',
+                            gallery ? 'alt' : 'label': '',
+                          },
+                        ]),
+                  icon: const Icon(Icons.add, size: 18),
+                  label: Text(gallery ? 'Add image URL' : 'Add link'),
+                ),
+              ],
+            ),
+            if (error != null)
+              Semantics(
+                liveRegion: true,
+                child: Padding(
+                  padding: const EdgeInsets.only(top: 12),
+                  child: Text(
+                    error!,
+                    style: const TextStyle(color: Design.error),
+                  ),
+                ),
+              ),
           ],
         ),
-        if (error != null)
-          Text(error!, style: const TextStyle(color: Design.error)),
+      ),
+    );
+  }
+
+  Widget itemFields(int index, bool gallery) {
+    final item = widget.items[index];
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        if (!(item['url'] ?? '').toString().startsWith('data:')) ...[
+          TextFormField(
+            initialValue: '${item['url'] ?? ''}',
+            decoration: InputDecoration(
+              labelText: gallery ? 'Image URL' : 'Destination URL',
+            ),
+            onChanged: (value) => change(index, 'url', value),
+            validator: (value) => mediaUrl(value, gallery: gallery),
+          ),
+          const SizedBox(height: 16),
+        ] else ...[
+          Text(
+            (item['filename'] ?? 'Uploaded screenshot').toString(),
+            style: Design.captionType,
+          ),
+          const SizedBox(height: 14),
+        ],
+        TextFormField(
+          initialValue: '${item[gallery ? 'alt' : 'label'] ?? ''}',
+          decoration: InputDecoration(
+            labelText: gallery
+                ? 'Meaningful screen description *'
+                : 'Link label *',
+          ),
+          onChanged: (value) => change(index, gallery ? 'alt' : 'label', value),
+          validator: (value) => value == null || value.trim().isEmpty
+              ? 'Add a description.'
+              : null,
+        ),
+        if (gallery &&
+            !(item['thumbnail'] ?? '').toString().startsWith('data:')) ...[
+          const SizedBox(height: 16),
+          TextFormField(
+            initialValue: '${item['thumbnail'] ?? ''}',
+            decoration: const InputDecoration(
+              labelText: 'Optimized thumbnail URL (optional)',
+              helperText: 'A smaller version of this same screenshot.',
+              helperMaxLines: 2,
+            ),
+            onChanged: (value) => change(index, 'thumbnail', value),
+            validator: (value) => mediaUrl(value, required: false),
+          ),
+        ],
       ],
     );
   }

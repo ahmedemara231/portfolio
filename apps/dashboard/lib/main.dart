@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:core/core.dart';
 import 'widgets/dashboard_shell.dart';
 import 'widgets/auth_gate.dart';
+import 'theme/dashboard_theme.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -12,7 +13,7 @@ void main() async {
   } catch (_) {
     runApp(
       MaterialApp(
-        theme: Design.theme,
+        theme: DashboardTheme.light,
         home: const Scaffold(
           body: Center(
             child: StateMessage(
@@ -33,7 +34,7 @@ class DashboardApp extends StatelessWidget {
   Widget build(BuildContext context) => MaterialApp(
     title: 'Portfolio Studio — Ahmed Emara',
     debugShowCheckedModeBanner: false,
-    theme: Design.theme,
+    theme: DashboardTheme.light,
     home: FirestoreService.useFirebase
         ? const AuthGate(child: _DashboardNavigator())
         : const DashboardShell(),

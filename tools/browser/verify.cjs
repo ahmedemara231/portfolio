@@ -42,7 +42,7 @@ async function screenshot(page,name){await page.screenshot({path:path.join(outpu
  const original=await readField(admin,purpose);assert.ok(original.length>20);const changed=original+' Local verification.';await fill(admin,purpose,changed);
  await admin.getByRole('button',{name:'Close editor',exact:true}).click();await contains(admin,'Discard unsaved changes?');
  await admin.getByRole('button',{name:'Keep editing',exact:true}).click();
- await admin.getByRole('button',{name:'Preview',exact:true}).click();await contains(admin,'Project preview');await contains(admin,changed);
+ await admin.getByRole('button',{name:'Preview',exact:true}).click();await contains(admin,'Private project preview');await contains(admin,changed);
  await admin.getByRole('button',{name:'Close preview',exact:true}).click();
  await admin.getByRole('button',{name:'Save changes',exact:true}).click();await contains(admin,'Project saved.');
  // Cross-tab storage notifications keep the open portfolio connected to CMS edits.

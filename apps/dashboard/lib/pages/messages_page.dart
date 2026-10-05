@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:core/core.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../theme/dashboard_theme.dart';
+import '../widgets/studio_widgets.dart';
 
 class MessagesPage extends StatefulWidget {
   const MessagesPage({super.key});
@@ -15,6 +16,8 @@ class MessagesPage extends StatefulWidget {
 class _MessagesPageState extends State<MessagesPage> {
   String _search = '';
   _Filter _filter = _Filter.all;
+  late final messages = FirestoreService.messagesStream();
+  late final unread = FirestoreService.unreadMessagesCountStream();
 
   @override
   Widget build(BuildContext context) {
@@ -22,54 +25,36 @@ class _MessagesPageState extends State<MessagesPage> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Header
-          Row(
-            children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      'Messages',
-                      style: TextStyle(
-                        fontSize: 28,
-                        fontWeight: FontWeight.bold,
-                      ),
+          StudioPageHeader(
+            eyebrow: 'Contact / Private inbox',
+            title: 'Messages',
+            description:
+                'Read and manage the messages sent through your portfolio contact form.',
+            action: StreamBuilder<int>(
+              stream: unread,
+              builder: (context, snap) {
+                final unread = snap.data ?? 0;
+                if (unread == 0) return const SizedBox.shrink();
+                return Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 6,
+                  ),
+                  decoration: BoxDecoration(
+                    color: DashboardColors.primary.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(999),
+                  ),
+                  child: Text(
+                    '$unread unread',
+                    style: const TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                      color: DashboardColors.primary,
                     ),
-                    const SizedBox(height: 8),
-                    Text(
-                      'Inbox from your portfolio contact form',
-                      style: TextStyle(color: DashboardColors.mutedForeground),
-                    ),
-                  ],
-                ),
-              ),
-              StreamBuilder<int>(
-                stream: FirestoreService.unreadMessagesCountStream(),
-                builder: (context, snap) {
-                  final unread = snap.data ?? 0;
-                  if (unread == 0) return const SizedBox.shrink();
-                  return Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 6,
-                    ),
-                    decoration: BoxDecoration(
-                      color: DashboardColors.primary.withValues(alpha: 0.1),
-                      borderRadius: BorderRadius.circular(999),
-                    ),
-                    child: Text(
-                      '$unread unread',
-                      style: const TextStyle(
-                        fontSize: 13,
-                        fontWeight: FontWeight.w600,
-                        color: DashboardColors.primary,
-                      ),
-                    ),
-                  );
-                },
-              ),
-            ],
+                  ),
+                );
+              },
+            ),
           ),
           const SizedBox(height: 24),
 
@@ -106,7 +91,7 @@ class _MessagesPageState extends State<MessagesPage> {
 
           // List
           StreamBuilder<List<MapEntry<String, Map<String, dynamic>>>>(
-            stream: FirestoreService.messagesStream(),
+            stream: messages,
             builder: (context, snap) {
               if (snap.connectionState == ConnectionState.waiting) {
                 return const Padding(

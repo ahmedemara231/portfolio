@@ -917,7 +917,7 @@ class ContactBlock extends StatelessWidget {
                   icon: const Icon(Icons.north_east, size: 18),
                   label: Text(content.text('contactEmail')),
                 ),
-                if (content.profile['contactFormEnabled'] == true)
+                if (content.profile['contactFormEnabled'] != false)
                   OutlinedButton.icon(
                     style: OutlinedButton.styleFrom(
                       foregroundColor: Design.paper,
@@ -979,16 +979,26 @@ class PortfolioFooter extends StatelessWidget {
     vertical: 26,
     child: Wrap(
       alignment: WrapAlignment.spaceBetween,
+      crossAxisAlignment: WrapCrossAlignment.center,
       spacing: 32,
       runSpacing: 14,
       children: [
-        Text(
-          '${content.text('name')} · ${content.text('professionalTitle', content.text('badge'))}',
-          style: const TextStyle(
-            fontSize: 12,
-            fontWeight: FontWeight.w600,
-            color: Design.muted,
-          ),
+        Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const PortfolioLogo(size: 40, semanticLabel: null),
+            const SizedBox(width: 12),
+            Flexible(
+              child: Text(
+                '${content.text('name')} · ${content.text('professionalTitle', content.text('badge'))}',
+                style: const TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                  color: Design.muted,
+                ),
+              ),
+            ),
+          ],
         ),
         Text(
           content.text('copyright').isEmpty

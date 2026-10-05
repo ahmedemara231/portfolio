@@ -22,15 +22,17 @@ Shared motion tokens live in `packages/core/lib/src/design/design_system.dart`. 
 
 The Studio manages profile and contact, CV uploads, availability, all project fields, galleries, verified links, draft/publication state, featured selection and order, experience dates, packages, capabilities, education, credibility, social links, and page metadata. Separate arrows change collection order and featured order. All changes persist; previews can show an unsaved project without publishing it. Editors protect unsaved changes, validate inputs, confirm deletion, and report failed writes.
 
+The dashboard uses the portfolio’s shared typography, warm surfaces, teal accent, and logo. Overview shows the actual published home-page lineup and introduction, plus content counts and recent edits. Project lists show screenshots, publication status, categories, and available store links. Featured work has a project picker that saves selection immediately and keeps drafts private. Grouped editors include unsaved introduction and case-study previews, screenshot viewing and removal with Undo, and named project references for capabilities. Profile & contact and Search & sharing have previews of their saved content. Existing records and unknown fields are retained.
+
 Local uploads are limited to 900 KB per file to respect browser storage quotas. Firebase mode accepts screenshots under 8 MB and PDFs under 5 MB. Draft screenshot uploads use authorized Storage reads, without public download-token URLs. CVs are intentionally public. Existing media URLs remain editable.
 
-The contact form stores messages in the private inbox, with validation and a two-minute backend cooldown. The email action always works independently. Replies open your mail client; delivery is handled by that client. This application does not claim to send email itself.
+The contact form writes to the `messages` collection in the `portfolio-60d78` Firestore database, with validation and a two-minute backend cooldown. It shows success only after Firestore confirms the message and cooldown writes. Explicit local previews store test messages in browser storage instead. The email action always works independently. Replies open your mail client; delivery is handled by that client. This application does not claim to send email itself.
 
 ## Firebase mode and production preparation
 
-Build each app with `--dart-define=USE_FIREBASE=true`; omit `USE_EMULATORS`. The existing Firebase project configuration is retained. The dashboard requires Email/Password Authentication and an `admin: true` custom claim assigned from a trusted environment. The session guard covers the entire navigation stack, including open editors and dialogs. Ordinary authenticated users cannot enter the dashboard or write content. Anonymous Authentication must be enabled to use the contact form. You can hide the form in Profile & contact and keep the direct email action.
+Firebase is the default backend for both apps, including ordinary `flutter build web` builds. Explicit local previews and local-storage tests use `--dart-define=USE_FIREBASE=false`; production builds omit `USE_EMULATORS`. The existing Firebase project configuration is retained. The dashboard requires Email/Password Authentication and an `admin: true` custom claim assigned from a trusted environment. The session guard covers the entire navigation stack, including open editors and dialogs. Ordinary authenticated users cannot enter the dashboard or write content. Anonymous Authentication must be enabled to use the contact form. You can hide the form in Profile & contact and keep the direct email action.
 
-This task does **not** deploy rules, assign live claims, migrate live documents, or replace live content. Before deploying the redesigned Firebase apps:
+Anonymous Authentication and the contact collections' validation, cooldown, and private-read rules are configured in `portfolio-60d78`. Before deploying the full content rules and redesigned Firebase apps:
 
 1. Review [the audit and discrepancies](docs/content-audit.md).
 2. Configure authentication and assign the owner's custom claim.
@@ -63,6 +65,27 @@ python3 tools/export_metadata.py --content /path/to/portfolio-content.json \
   --web-root apps/portfolio/build/web
 ```
 
+## Firebase Hosting deployment
+
+Both Hosting sites (`portfolio-ce1ae` and `dashboard-93da1`) belong to the Firebase project `portfolio-ce1ae`. The apps use the separate project `portfolio-60d78` for Authentication, Firestore, and Storage. The `.firebaserc` files select the Hosting project by default; the root also defines a `backend` alias for `portfolio-60d78`. When deploying Firestore or Storage rules, explicitly pass `--project portfolio-60d78` (or `--project backend` from the workspace root).
+
+After generating the production artifacts above, deploy the portfolio from the workspace root:
+
+```sh
+firebase use default
+firebase deploy --only hosting
+```
+
+`firebase use default` overrides any active project inherited from a parent directory. The root Hosting configuration serves `apps/portfolio/build/web`. The same commands work from `apps/portfolio`, where the app configuration serves `build/web`.
+
+Deploy the dashboard separately from its directory:
+
+```sh
+cd apps/dashboard
+firebase use default
+firebase deploy --only hosting
+```
+
 ## Search, sharing, and static fallback
 
 `tools/export_metadata.py` builds semantic HTML fallback pages, route-specific titles/descriptions, Open Graph metadata, canonical links, Person structured data, a sitemap, and robots directives from the same content model. It excludes drafts and escapes user content. The fallback is readable before Flutter starts or if it fails to load. Published-content exports convert hosted screenshot references into public URLs governed by the publication rules, without creating download tokens; supported local image uploads also remain visible in generated pages.
@@ -77,8 +100,8 @@ Flutter updates browser titles and metadata immediately after edits. Search craw
 
 ```sh
 dart analyze .
-(cd apps/portfolio && flutter test --no-pub)
-(cd apps/dashboard && flutter test --no-pub)
+(cd apps/portfolio && flutter test --no-pub --dart-define=USE_FIREBASE=false)
+(cd apps/dashboard && flutter test --no-pub --dart-define=USE_FIREBASE=false)
 python3 tools/test_metadata.py
 firebase emulators:exec --project demo-portfolio --only firestore,storage \
   'node --test tools/security/rules.test.mjs'
@@ -90,9 +113,13 @@ Motion tests also cover visibility-triggered reveals, stable tap targets, keyboa
 
 Browser verification uses Playwright and local Chrome. Install `tools/browser` dependencies and run `npm test` there while the preview is running. It exercises actual controls, saves and reloads content, checks public publication behavior, and captures responsive screenshots in `.preview`.
 
+Run `npm run test:studio` for the redesigned dashboard workflows: featured selection and persistence, unsaved profile previews, capability references, screenshot viewing and ordering, and compact navigation and editors. Captures are written to `.preview/studio`. The script only accepts a local preview URL.
+
 Run `npm run test:motion` in the same directory to exercise real pointer feedback, gallery and dashboard preview transitions, responsive scrolling, and reduced motion. Animation captures are written to `.preview/motion`.
 
 Run `node tools/browser/auth_verify.cjs` with the Firebase integration preview to check sign-in, non-admin denial, authenticated persistence, public updates, metadata exports, anonymous contact submissions, mobile inbox dialogs, and session protection of open editors. `node tools/browser/media_verify.cjs` checks actual uploads, private draft media, publication, safe deletion, and CV downloads. Demo sign-ins use tab-scoped sessions so public visitors and the owner can be exercised independently on the local shared origin.
+
+Run `npm run test:contact` in `tools/browser` with the Firebase integration preview to verify the contact form creates a document in the emulator's `messages` collection, persists its fields and server timestamp, and reports cooldown rejection without showing success. This check also requires `tools/security` dependencies and removes only the emulator message and cooldown record it creates.
 
 ## Local Firebase integration preview
 

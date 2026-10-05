@@ -507,10 +507,10 @@ const schemas = [
       ),
       ContentField(
         'projectIds',
-        'Related project IDs',
+        'Related projects',
         kind: FieldKind.lines,
         help:
-            'Only verified relationships. Copy an ID from the project list; one per line.',
+            'Select projects that demonstrate this capability. Only verified relationships.',
       ),
     ],
   ),

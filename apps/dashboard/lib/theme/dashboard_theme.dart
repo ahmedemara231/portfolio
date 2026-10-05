@@ -22,5 +22,23 @@ class DashboardColors {
 }
 
 class DashboardTheme {
-  static ThemeData get light => Design.theme;
+  static ThemeData get light => Design.theme.copyWith(
+    appBarTheme: const AppBarTheme(
+      backgroundColor: Design.paper,
+      foregroundColor: Design.ink,
+      elevation: 0,
+      scrolledUnderElevation: 0,
+      toolbarHeight: 72,
+      titleTextStyle: TextStyle(
+        fontFamily: Design.font,
+        color: Design.ink,
+        fontSize: 18,
+        fontWeight: FontWeight.w700,
+      ),
+    ),
+    listTileTheme: const ListTileThemeData(
+      iconColor: Design.muted,
+      textColor: Design.ink,
+    ),
+  );
 }

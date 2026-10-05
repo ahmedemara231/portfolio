@@ -319,6 +319,30 @@ class SectionHeading extends StatelessWidget {
   );
 }
 
+class PortfolioLogo extends StatelessWidget {
+  final double size;
+  final String? semanticLabel;
+  const PortfolioLogo({
+    super.key,
+    this.size = 48,
+    this.semanticLabel = 'Ahmed Emara logo',
+  });
+  @override
+  Widget build(BuildContext context) => ClipRRect(
+    borderRadius: BorderRadius.circular(size / 5),
+    child: Image.asset(
+      'assets/brand/logo.png',
+      package: 'core',
+      width: size,
+      height: size,
+      fit: BoxFit.contain,
+      filterQuality: FilterQuality.high,
+      semanticLabel: semanticLabel,
+      excludeFromSemantics: semanticLabel == null,
+    ),
+  );
+}
+
 class PortfolioBrand extends StatelessWidget {
   final String name;
   final bool compact;
@@ -331,24 +355,7 @@ class PortfolioBrand extends StatelessWidget {
   Widget build(BuildContext context) => Row(
     mainAxisSize: MainAxisSize.min,
     children: [
-      Container(
-        width: 40,
-        height: 40,
-        alignment: Alignment.center,
-        decoration: BoxDecoration(
-          color: Design.ink,
-          borderRadius: BorderRadius.circular(10),
-        ),
-        child: const Text(
-          'ae.',
-          style: TextStyle(
-            color: Design.paper,
-            fontWeight: FontWeight.w800,
-            fontSize: 22,
-            letterSpacing: -1.5,
-          ),
-        ),
-      ),
+      PortfolioLogo(semanticLabel: compact ? '$name logo' : null),
       if (!compact) ...[
         const SizedBox(width: 12),
         Flexible(

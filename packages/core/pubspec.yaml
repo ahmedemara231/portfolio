@@ -21,6 +21,7 @@ dependencies:
 
 flutter:
   assets:
+    - assets/brand/
     - assets/content.json
     - assets/projects/
   fonts:

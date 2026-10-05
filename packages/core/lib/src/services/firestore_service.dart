@@ -7,10 +7,13 @@ import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../web/browser.dart';
 
-/// Local preview never connects to production. Both apps share one repository
-/// and, when served on the same origin, one durable browser storage key.
+/// Firebase is the default backend. Explicit local previews never connect to
+/// production and share one durable browser storage key on the same origin.
 class FirestoreService {
-  static const useFirebase = bool.fromEnvironment('USE_FIREBASE');
+  static const useFirebase = bool.fromEnvironment(
+    'USE_FIREBASE',
+    defaultValue: true,
+  );
   static const useEmulators = bool.fromEnvironment('USE_EMULATORS');
   static const localKey = 'ahmed-emara-content-v2';
   static final _changes = StreamController<void>.broadcast();

@@ -21,6 +21,7 @@ def render(content,route='/',project=None):
  links=public(collections.get('social_links',{}))
  person={'@context':'https://schema.org','@type':'Person','name':name,'jobTitle':p.get('professionalTitle',p.get('badge','Flutter Developer')),'url':origin,'email':p.get('contactEmail',''),'sameAs':[r['url'] for r in links if r.get('url','').startswith('https://')]}
  css='''body{margin:0;background:#f6f5f0;color:#192e2b;font:16px/1.8 system-ui,sans-serif}main{max-width:1040px;margin:auto;padding:40px 24px}a{color:#08786f}h1{font-size:clamp(40px,7vw,76px);line-height:1.1;letter-spacing:-2px}h2{font-size:32px;line-height:1.2;margin-top:64px}h3{font-size:23px}nav{display:flex;gap:24px;flex-wrap:wrap}article{border-top:1px solid #d9ded6;padding:24px 0}img{max-width:220px;height:360px;object-fit:contain;margin:16px;background:#e6eee8}small{color:#5b6b65}.links{display:flex;gap:24px;flex-wrap:wrap}footer{margin-top:64px}'''
+ css+='nav{align-items:center}nav .brand{display:inline-flex;align-items:center;gap:12px;color:#192e2b;font-weight:700;text-decoration:none}nav .brand img{width:48px;height:48px;max-width:none;object-fit:contain;margin:0;border-radius:10px;background:white}'
  def store_links(project):
   pairs=[('Google Play',project.get('googlePlayUrl')),('App Store',project.get('appStoreUrl')),('Website',project.get('liveUrl')),('Source code',project.get('codeUrl'))]
   pairs += [(l.get('label','View'),l.get('url')) for l in project.get('additionalLinks',[])]
@@ -32,7 +33,7 @@ def render(content,route='/',project=None):
   return f'<article><small>{esc(pr.get("category"))}</small><h3><a href="{url}">{esc(pr["title"])}</a></h3><p>{esc(pr.get("description"))}</p>{images}{store_links(pr)}</article>'
  projects=[{'id':key,**value} for key,value in collections.get('projects',{}).items() if value.get('status','published')=='published']
  projects.sort(key=lambda r:r.get('order',0))
- body=f'<main id="portfolio-fallback"><nav aria-label="Portfolio"><a href="/">{esc(name)}</a><a href="/projects">Projects</a><a href="mailto:{esc(p.get("contactEmail"))}">Contact</a>'
+ body=f'<main id="portfolio-fallback"><nav aria-label="Portfolio"><a class="brand" href="/"><img src="/assets/packages/core/assets/brand/logo.png" width="48" height="48" alt="" decoding="async"><span>{esc(name)}</span></a><a href="/projects">Projects</a><a href="mailto:{esc(p.get("contactEmail"))}">Contact</a>'
  if p.get('cvUrl'):body+=f'<a href="{esc(p["cvUrl"])}" download>Download CV</a>'
  body+='</nav>'
  if project:
@@ -65,7 +66,7 @@ def render(content,route='/',project=None):
  return f'''<!DOCTYPE html>
 <html lang="en"><head><base href="/"><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>{esc(title)}</title><meta name="description" content="{esc(description)}"><meta name="theme-color" content="#f6f5f0"><meta name="robots" content="index, follow">
-<link rel="canonical" href="{esc(canonical)}"><link rel="icon" href="/favicon.svg" type="image/svg+xml"><link rel="manifest" href="/manifest.json">
+<link rel="canonical" href="{esc(canonical)}"><link rel="icon" href="/favicon.png" type="image/png" sizes="64x64"><link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" sizes="180x180"><link rel="manifest" href="/manifest.json">
 <meta property="og:type" content="{'article' if project else 'website'}"><meta property="og:site_name" content="{esc(name)} — Portfolio"><meta property="og:title" content="{esc(title)}"><meta property="og:description" content="{esc(description)}"><meta property="og:url" content="{esc(canonical)}">{f'<meta property="og:image" content="{esc(image)}">' if image else ''}
 <meta name="twitter:card" content="{'summary_large_image' if image else 'summary'}"><meta name="twitter:title" content="{esc(title)}"><meta name="twitter:description" content="{esc(description)}">
 <script type="application/ld+json">{structured}</script><style>{css}</style></head><body>{body}

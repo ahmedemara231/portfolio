@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:core/core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'studio_widgets.dart';
 
 class AuthGate extends StatefulWidget {
   final Widget child;
@@ -160,96 +161,174 @@ class _SignInScreenState extends State<SignInScreen> {
   Widget build(BuildContext context) => Scaffold(
     body: Center(
       child: SingleChildScrollView(
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 480),
-          child: Padding(
-            padding: const EdgeInsets.all(28),
-            child: Form(
-              key: form,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const PortfolioBrand(),
-                  const SizedBox(height: 48),
-                  const Eyebrow('Portfolio Studio'),
-                  const SizedBox(height: 12),
-                  const Text(
-                    'Welcome back.',
-                    style: TextStyle(
-                      fontSize: 38,
-                      fontWeight: FontWeight.w700,
-                      letterSpacing: -1.2,
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  const Text(
-                    'Sign in to maintain your work and the story around it.',
-                    style: TextStyle(color: Design.muted, height: 1.7),
-                  ),
-                  const SizedBox(height: 32),
-                  TextFormField(
-                    controller: email,
-                    keyboardType: TextInputType.emailAddress,
-                    autofillHints: const [
-                      AutofillHints.username,
-                      AutofillHints.email,
-                    ],
-                    decoration: const InputDecoration(labelText: 'Email'),
-                    validator: (v) => v != null && v.contains('@')
-                        ? null
-                        : 'Enter your email address.',
-                  ),
-                  const SizedBox(height: 20),
-                  TextFormField(
-                    controller: password,
-                    obscureText: obscure,
-                    autofillHints: const [AutofillHints.password],
-                    onFieldSubmitted: (_) => signIn(),
-                    decoration: InputDecoration(
-                      labelText: 'Password',
-                      suffixIcon: IconButton(
-                        tooltip: obscure ? 'Show password' : 'Hide password',
-                        onPressed: () => setState(() => obscure = !obscure),
-                        icon: Icon(
-                          obscure
-                              ? Icons.visibility_outlined
-                              : Icons.visibility_off_outlined,
+        child: Padding(
+          padding: EdgeInsets.all(
+            MediaQuery.sizeOf(context).width < 600 ? 20 : 48,
+          ),
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 1080),
+            child: LayoutBuilder(
+              builder: (context, c) {
+                final login = StudioPanel(
+                  padding: EdgeInsets.all(c.maxWidth < 500 ? 24 : 32),
+                  child: Form(
+                    key: form,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        const Eyebrow('Portfolio Studio'),
+                        const SizedBox(height: 16),
+                        const Text(
+                          'Welcome back.',
+                          style: TextStyle(
+                            fontSize: 38,
+                            fontWeight: FontWeight.w700,
+                            letterSpacing: -1.2,
+                            height: 1.15,
+                          ),
                         ),
-                      ),
-                    ),
-                    validator: (v) =>
-                        v == null || v.isEmpty ? 'Enter your password.' : null,
-                  ),
-                  const SizedBox(height: 20),
-                  if (error != null)
-                    Semantics(
-                      liveRegion: true,
-                      child: Padding(
-                        padding: const EdgeInsets.only(bottom: 16),
-                        child: Text(
-                          error!,
-                          style: const TextStyle(color: Design.error),
+                        const SizedBox(height: 16),
+                        const Text(
+                          'Sign in to maintain your work and the story around it.',
+                          style: Design.bodyType,
                         ),
-                      ),
-                    ),
-                  SizedBox(
-                    width: double.infinity,
-                    child: FilledButton(
-                      onPressed: busy ? null : signIn,
-                      child: busy
-                          ? const SizedBox(
-                              width: 20,
-                              height: 20,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2,
-                                color: Colors.white,
+                        const SizedBox(height: 32),
+                        TextFormField(
+                          controller: email,
+                          enabled: !busy,
+                          keyboardType: TextInputType.emailAddress,
+                          autofillHints: const [
+                            AutofillHints.username,
+                            AutofillHints.email,
+                          ],
+                          decoration: const InputDecoration(labelText: 'Email'),
+                          validator: (value) =>
+                              value != null &&
+                                  RegExp(
+                                    r'^[^\s@]+@[^\s@]+\.[^\s@]+$',
+                                  ).hasMatch(value.trim())
+                              ? null
+                              : 'Enter your email address.',
+                        ),
+                        const SizedBox(height: 20),
+                        TextFormField(
+                          controller: password,
+                          enabled: !busy,
+                          obscureText: obscure,
+                          autofillHints: const [AutofillHints.password],
+                          onFieldSubmitted: (_) => signIn(),
+                          decoration: InputDecoration(
+                            labelText: 'Password',
+                            suffixIcon: IconButton(
+                              tooltip: obscure
+                                  ? 'Show password'
+                                  : 'Hide password',
+                              onPressed: busy
+                                  ? null
+                                  : () => setState(() => obscure = !obscure),
+                              icon: Icon(
+                                obscure
+                                    ? Icons.visibility_outlined
+                                    : Icons.visibility_off_outlined,
                               ),
-                            )
-                          : const Text('Sign in'),
+                            ),
+                          ),
+                          validator: (value) => value == null || value.isEmpty
+                              ? 'Enter your password.'
+                              : null,
+                        ),
+                        const SizedBox(height: 24),
+                        if (error != null)
+                          Semantics(
+                            liveRegion: true,
+                            child: Padding(
+                              padding: const EdgeInsets.only(bottom: 18),
+                              child: Text(
+                                error!,
+                                style: const TextStyle(
+                                  color: Design.error,
+                                  height: 1.6,
+                                ),
+                              ),
+                            ),
+                          ),
+                        FilledButton(
+                          onPressed: busy ? null : signIn,
+                          child: busy
+                              ? const SizedBox(
+                                  width: 20,
+                                  height: 20,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    color: Colors.white,
+                                  ),
+                                )
+                              : const Text('Sign in'),
+                        ),
+                        const SizedBox(height: 18),
+                        const Text(
+                          'Administrator access is required to manage content.',
+                          style: Design.captionType,
+                        ),
+                      ],
                     ),
                   ),
-                ],
-              ),
+                );
+                if (c.maxWidth < 850) {
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      const PortfolioBrand(),
+                      const SizedBox(height: 28),
+                      login,
+                    ],
+                  );
+                }
+                return Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Expanded(
+                      child: Padding(
+                        padding: const EdgeInsets.only(right: 48),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const PortfolioBrand(),
+                            const SizedBox(height: 48),
+                            const Text(
+                              'A studio for\nyour work.',
+                              style: TextStyle(
+                                fontSize: 60,
+                                height: 1.1,
+                                letterSpacing: -2.4,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                            const SizedBox(height: 24),
+                            const Text(
+                              'Keep your introduction current, curate your strongest projects, and share the experience behind them.',
+                              style: Design.bodyType,
+                            ),
+                            const SizedBox(height: 36),
+                            const Divider(),
+                            const SizedBox(height: 22),
+                            const Wrap(
+                              spacing: 12,
+                              runSpacing: 12,
+                              children: [
+                                StatusPill('Private drafts', active: false),
+                                StatusPill('Real previews'),
+                                StatusPill('Published content'),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    Expanded(child: login),
+                  ],
+                );
+              },
             ),
           ),
         ),
