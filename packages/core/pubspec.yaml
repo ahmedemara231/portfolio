@@ -13,4 +13,17 @@ dependencies:
     sdk: flutter
   firebase_core: ^4.3.0
   cloud_firestore: ^6.1.2
-  font_awesome_flutter: ^10.7.0
+  firebase_auth: ^6.1.0
+  firebase_storage: ^13.0.0
+  shared_preferences: ^2.5.3
+  url_launcher: ^6.3.0
+  web: ^1.1.1
+
+flutter:
+  assets:
+    - assets/content.json
+    - assets/projects/
+  fonts:
+    - family: Manrope
+      fonts:
+        - asset: assets/fonts/Manrope.ttf

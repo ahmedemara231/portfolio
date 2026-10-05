@@ -24,12 +24,7 @@ class TechnicalSkillModel {
   }
 
   Map<String, dynamic> toMap() {
-    return {
-      'icon': icon,
-      'name': name,
-      'level': level,
-      'order': order,
-    };
+    return {'icon': icon, 'name': name, 'level': level, 'order': order};
   }
 
   TechnicalSkillModel copyWith({

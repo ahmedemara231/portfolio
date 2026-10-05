@@ -1,0 +1,18 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    function admin() { return request.auth != null && request.auth.token.get('admin', false) == true; }
+    match /projects/{projectId}/{filename} {
+      allow read: if admin() || (firestore.exists(/databases/(default)/documents/projects/$(projectId))
+        && firestore.get(/databases/(default)/documents/projects/$(projectId)).data.status == 'published');
+      allow create, update: if admin() && request.resource.size < 8 * 1024 * 1024
+        && request.resource.contentType.matches('image/(png|jpeg|webp)');
+      allow delete: if admin();
+    }
+    match /cv/{filename} {
+      allow read: if true;
+      allow create, update: if admin() && request.resource.size < 5 * 1024 * 1024 && request.resource.contentType == 'application/pdf';
+      allow delete: if admin();
+    }
+  }
+}

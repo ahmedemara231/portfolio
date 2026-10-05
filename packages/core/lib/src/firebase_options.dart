@@ -5,7 +5,7 @@ import 'package:flutter/foundation.dart'
 class DefaultFirebaseOptions {
   static FirebaseOptions get currentPlatform {
     if (kIsWeb) {
-      return web;
+      return const bool.fromEnvironment('USE_EMULATORS') ? emulator : web;
     }
     switch (defaultTargetPlatform) {
       case TargetPlatform.android:
@@ -22,6 +22,15 @@ class DefaultFirebaseOptions {
         );
     }
   }
+
+  static const FirebaseOptions emulator = FirebaseOptions(
+    apiKey: 'demo-api-key',
+    appId: '1:123456789:web:demo',
+    messagingSenderId: '123456789',
+    projectId: 'demo-portfolio',
+    authDomain: 'localhost',
+    storageBucket: 'demo-portfolio.appspot.com',
+  );
 
   static const FirebaseOptions web = FirebaseOptions(
     apiKey: 'AIzaSyCUJY9s-lnGXlfW6KgrVLj_mEVwM6_Dgis',

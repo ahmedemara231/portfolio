@@ -1,35 +1,35 @@
 {
-    "name": "Ahmed Emara — Senior Flutter Developer",
-    "short_name": "Ahmed Emara",
-    "start_url": ".",
-    "display": "standalone",
-    "background_color": "#FFFFFF",
-    "theme_color": "#030213",
-    "description": "Senior Flutter developer specialising in production-grade cross-platform mobile apps.",
-    "orientation": "portrait-primary",
-    "prefer_related_applications": false,
-    "icons": [
-        {
-            "src": "icons/Icon-192.png",
-            "sizes": "192x192",
-            "type": "image/png"
-        },
-        {
-            "src": "icons/Icon-512.png",
-            "sizes": "512x512",
-            "type": "image/png"
-        },
-        {
-            "src": "icons/Icon-maskable-192.png",
-            "sizes": "192x192",
-            "type": "image/png",
-            "purpose": "maskable"
-        },
-        {
-            "src": "icons/Icon-maskable-512.png",
-            "sizes": "512x512",
-            "type": "image/png",
-            "purpose": "maskable"
-        }
-    ]
+  "name": "Ahmed Emara \u2014 Portfolio",
+  "short_name": "Ahmed Emara",
+  "start_url": ".",
+  "display": "standalone",
+  "background_color": "#f6f5f0",
+  "theme_color": "#08786f",
+  "description": "Flutter developer portfolio",
+  "orientation": "portrait-primary",
+  "prefer_related_applications": false,
+  "icons": [
+    {
+      "src": "icons/Icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "icons/Icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    },
+    {
+      "src": "icons/Icon-maskable-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "icons/Icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
 }

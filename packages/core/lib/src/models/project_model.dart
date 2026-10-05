@@ -13,7 +13,50 @@ class ProjectModel {
   final String tagColor;
   final int order;
 
+  final String slug;
+  final String category;
+  final String overview;
+  final String audience;
+  final String role;
+  final String challenges;
+  final String decisions;
+  final String outcomes;
+  final String date;
+  final String imageAlt;
+  final String seoTitle;
+  final String seoDescription;
+  final String status;
+  final String imageKind;
+  final bool featured;
+  final int featuredOrder;
+  final List<String> features;
+  final List<String> capabilities;
+  final List<String> technologies;
+  final List<Map<String, dynamic>> gallery;
+  final List<Map<String, dynamic>> additionalLinks;
+
   const ProjectModel({
+    this.slug = '',
+    this.category = '',
+    this.overview = '',
+    this.audience = '',
+    this.role = '',
+    this.challenges = '',
+    this.decisions = '',
+    this.outcomes = '',
+    this.date = '',
+    this.imageAlt = '',
+    this.seoTitle = '',
+    this.seoDescription = '',
+    this.status = 'published',
+    this.imageKind = 'placeholder',
+    this.featured = false,
+    this.featuredOrder = 0,
+    this.features = const [],
+    this.capabilities = const [],
+    this.technologies = const [],
+    this.gallery = const [],
+    this.additionalLinks = const [],
     this.id,
     this.title = '',
     this.description = '',
@@ -31,6 +74,31 @@ class ProjectModel {
 
   factory ProjectModel.fromMap(Map<String, dynamic> map, [String? id]) {
     return ProjectModel(
+      slug: map['slug'] ?? '',
+      category: map['category'] ?? '',
+      overview: map['overview'] ?? '',
+      audience: map['audience'] ?? '',
+      role: map['role'] ?? '',
+      challenges: map['challenges'] ?? '',
+      decisions: map['decisions'] ?? '',
+      outcomes: map['outcomes'] ?? '',
+      date: map['date'] ?? '',
+      imageAlt: map['imageAlt'] ?? '',
+      seoTitle: map['seoTitle'] ?? '',
+      seoDescription: map['seoDescription'] ?? '',
+      status: map['status'] ?? 'published',
+      imageKind: map['imageKind'] ?? 'placeholder',
+      featured: map['featured'] == true,
+      featuredOrder: (map['featuredOrder'] as num?)?.toInt() ?? 0,
+      features: List<String>.from(map['features'] ?? []),
+      capabilities: List<String>.from(map['capabilities'] ?? []),
+      technologies: List<String>.from(map['technologies'] ?? []),
+      gallery: (map['gallery'] as List? ?? [])
+          .map((e) => Map<String, dynamic>.from(e as Map))
+          .toList(),
+      additionalLinks: (map['additionalLinks'] as List? ?? [])
+          .map((e) => Map<String, dynamic>.from(e as Map))
+          .toList(),
       id: id,
       title: map['title'] ?? '',
       description: map['description'] ?? '',
@@ -49,6 +117,27 @@ class ProjectModel {
 
   Map<String, dynamic> toMap() {
     return {
+      'slug': slug,
+      'category': category,
+      'overview': overview,
+      'audience': audience,
+      'role': role,
+      'challenges': challenges,
+      'decisions': decisions,
+      'outcomes': outcomes,
+      'date': date,
+      'imageAlt': imageAlt,
+      'seoTitle': seoTitle,
+      'seoDescription': seoDescription,
+      'status': status,
+      'imageKind': imageKind,
+      'featured': featured,
+      'featuredOrder': featuredOrder,
+      'features': features,
+      'capabilities': capabilities,
+      'technologies': technologies,
+      'gallery': gallery,
+      'additionalLinks': additionalLinks,
       'title': title,
       'description': description,
       'image': image,
@@ -65,6 +154,27 @@ class ProjectModel {
   }
 
   ProjectModel copyWith({
+    String? slug,
+    String? category,
+    String? overview,
+    String? audience,
+    String? role,
+    String? challenges,
+    String? decisions,
+    String? outcomes,
+    String? date,
+    String? imageAlt,
+    String? seoTitle,
+    String? seoDescription,
+    String? status,
+    String? imageKind,
+    bool? featured,
+    int? featuredOrder,
+    List<String>? features,
+    List<String>? capabilities,
+    List<String>? technologies,
+    List<Map<String, dynamic>>? gallery,
+    List<Map<String, dynamic>>? additionalLinks,
     String? id,
     String? title,
     String? description,
@@ -80,6 +190,27 @@ class ProjectModel {
     int? order,
   }) {
     return ProjectModel(
+      slug: slug ?? this.slug,
+      category: category ?? this.category,
+      overview: overview ?? this.overview,
+      audience: audience ?? this.audience,
+      role: role ?? this.role,
+      challenges: challenges ?? this.challenges,
+      decisions: decisions ?? this.decisions,
+      outcomes: outcomes ?? this.outcomes,
+      date: date ?? this.date,
+      imageAlt: imageAlt ?? this.imageAlt,
+      seoTitle: seoTitle ?? this.seoTitle,
+      seoDescription: seoDescription ?? this.seoDescription,
+      status: status ?? this.status,
+      imageKind: imageKind ?? this.imageKind,
+      featured: featured ?? this.featured,
+      featuredOrder: featuredOrder ?? this.featuredOrder,
+      features: features ?? this.features,
+      capabilities: capabilities ?? this.capabilities,
+      technologies: technologies ?? this.technologies,
+      gallery: gallery ?? this.gallery,
+      additionalLinks: additionalLinks ?? this.additionalLinks,
       id: id ?? this.id,
       title: title ?? this.title,
       description: description ?? this.description,

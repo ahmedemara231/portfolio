@@ -1,0 +1,52 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function admin() { return request.auth != null && request.auth.token.get('admin', false) == true; }
+    function publicCollection(name) {
+      return name in ['projects', 'experiences', 'packages', 'education', 'technical_skills',
+        'soft_skills', 'tools', 'about_features', 'stats', 'social_links', 'experience_stats'];
+    }
+    function validContent(name) {
+      let d = request.resource.data;
+      return d.status in ['draft', 'published'] && d.order is int
+        && (name != 'projects' || (d.title is string && d.title.size() > 0 && d.title.size() <= 160
+          && d.slug is string && d.slug.matches('^[a-z0-9]+(-[a-z0-9]+)*$') && d.slug.size() <= 120));
+    }
+    match /profile/main {
+      allow read: if true;
+      allow create, update: if admin();
+      allow delete: if false;
+    }
+    match /{collection}/{id} {
+      allow read: if publicCollection(collection) && (admin() || resource.data.status == 'published');
+      allow create, update: if publicCollection(collection) && admin() && validContent(collection);
+      allow delete: if publicCollection(collection) && admin();
+    }
+    match /activity/{id} {
+      allow read, delete: if admin();
+      allow create: if admin() && request.resource.data.keys().hasOnly(['action','entity','target','createdAt']);
+    }
+    function canSend(uid) {
+      return !exists(/databases/$(database)/documents/contact_limits/$(uid))
+        || request.time - get(/databases/$(database)/documents/contact_limits/$(uid)).data.lastSent >= duration.value(2, 'm');
+    }
+    match /contact_limits/{uid} {
+      allow read: if admin();
+      allow create, update: if request.auth != null && request.auth.uid == uid && canSend(uid)
+        && request.resource.data.keys().hasOnly(['lastSent']) && request.resource.data.lastSent == request.time;
+    }
+    match /messages/{id} {
+      allow read, update, delete: if admin();
+      allow create: if request.auth != null && canSend(request.auth.uid)
+        && request.resource.data.keys().hasOnly(['name','email','subject','message','senderUid','createdAt','read'])
+        && request.resource.data.senderUid == request.auth.uid
+        && request.resource.data.name is string && request.resource.data.name.size() > 0 && request.resource.data.name.size() <= 100
+        && request.resource.data.email is string && request.resource.data.email.size() <= 254
+        && request.resource.data.email.matches('^[^ ]+@[^ ]+\\.[^ ]+$')
+        && request.resource.data.subject is string && request.resource.data.subject.size() <= 160
+        && request.resource.data.message is string && request.resource.data.message.size() >= 10 && request.resource.data.message.size() <= 5000
+        && request.resource.data.read == false && request.resource.data.createdAt == request.time
+        && getAfter(/databases/$(database)/documents/contact_limits/$(request.auth.uid)).data.lastSent == request.time;
+    }
+  }
+}

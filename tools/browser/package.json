@@ -1,0 +1,1 @@
+{"name":"portfolio-browser-checks","private":true,"scripts":{"test":"node verify.cjs"},"devDependencies":{"playwright":"^1.63.0"}}

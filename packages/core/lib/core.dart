@@ -12,6 +12,7 @@ export 'src/models/tool_model.dart';
 
 // Services
 export 'src/services/firestore_service.dart';
+export 'src/services/backend_bootstrap.dart';
 
 // Utils
 export 'src/utils/icon_mapper.dart';
@@ -19,3 +20,7 @@ export 'src/utils/color_parser.dart';
 
 // Firebase
 export 'src/firebase_options.dart';
+export 'src/web/browser.dart';
+export 'src/design/design_system.dart';
+export 'src/design/project_media.dart';
+export 'src/design/project_detail.dart';

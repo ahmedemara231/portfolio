@@ -1,16 +1,110 @@
-# portfolio
+# Ahmed Emara · Portfolio & Studio
 
-A new Flutter project.
+A Flutter web workspace with a public portfolio, a content dashboard, and shared models, design tokens, assets, and persistence in `packages/core`. The redesign keeps Firebase/Firestore and the existing Flutter stack.
 
-## Getting Started
+## Local preview
 
-This project is a starting point for a Flutter application.
+Run from the workspace root:
 
-A few resources to get you started if this is your first Flutter project:
+```sh
+./tools/build_preview.sh
+```
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+Open [the portfolio](http://localhost:4173/) and [the dashboard](http://localhost:4173/admin/). Both apps are served on the same origin and share durable browser storage. Edits update an open portfolio tab and survive reloads. The dashboard identifies this as **Local preview**. This mode does not connect to Firebase or change production data, and has no production authentication requirement. Use it only as a development preview.
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+Generated preview builds and browser captures live in `.preview`, outside the source diff. To use existing builds, run `python3 tools/preview_server.py`. It uses `.preview/local` when available and falls back to the apps' `build/web` directories. To run each app independently, use the existing Melos scripts; separate origins do not share local browser data. Firebase mode works across different origins.
+
+## Content and editing
+
+The public site presents a compact introduction, four selected projects, experience, three Flutter packages, grouped capabilities, education, and contact. `/projects` contains the full collection and domain filters. `/projects/<slug>` is a shareable case study. Empty contribution, challenge, technology, and outcome sections are omitted.
+
+The Studio manages profile and contact, CV uploads, availability, all project fields, galleries, verified links, draft/publication state, featured selection and order, experience dates, packages, capabilities, education, credibility, social links, and page metadata. Separate arrows change collection order and featured order. All changes persist; previews can show an unsaved project without publishing it. Editors protect unsaved changes, validate inputs, confirm deletion, and report failed writes.
+
+Local uploads are limited to 900 KB per file to respect browser storage quotas. Firebase mode accepts screenshots under 8 MB and PDFs under 5 MB. Draft screenshot uploads use authorized Storage reads, without public download-token URLs. CVs are intentionally public. Existing media URLs remain editable.
+
+The contact form stores messages in the private inbox, with validation and a two-minute backend cooldown. The email action always works independently. Replies open your mail client; delivery is handled by that client. This application does not claim to send email itself.
+
+## Firebase mode and production preparation
+
+Build each app with `--dart-define=USE_FIREBASE=true`; omit `USE_EMULATORS`. The existing Firebase project configuration is retained. The dashboard requires Email/Password Authentication and an `admin: true` custom claim assigned from a trusted environment. The session guard covers the entire navigation stack, including open editors and dialogs. Ordinary authenticated users cannot enter the dashboard or write content. Anonymous Authentication must be enabled to use the contact form. You can hide the form in Profile & contact and keep the direct email action.
+
+This task does **not** deploy rules, assign live claims, migrate live documents, or replace live content. Before deploying the redesigned Firebase apps:
+
+1. Review [the audit and discrepancies](docs/content-audit.md).
+2. Configure authentication and assign the owner's custom claim.
+3. Back up the database. Run the additive migration script in dry-run mode and inspect its plan before applying it. Legacy records need `status`, and projects need stable `slug` fields before the new published-only public queries are used.
+4. Review and deploy `firestore.rules` and `storage.rules`. Enable Storage/Firestore rule integration for publication-aware screenshot reads. Configure bucket CORS for the public and dashboard origins if required.
+5. Complete or import the reviewed CV content through the dashboard. Migration preserves existing wording and links; it does not silently replace live content with the local fixture.
+6. Export published content from Search & sharing, then generate metadata from that export for the production build.
+
+```sh
+cd tools/security
+npm install
+cd ../..
+node tools/security/migrate.mjs --project portfolio-60d78
+# Review .backups/<timestamp>/before.json and migration-plan.json.
+# --apply is the explicit write option; it is never the default.
+```
+
+The migration uses application-default administrator credentials. It only adds missing publication, address, and ordering fields, rechecking each document in a transaction. Existing descriptions, links, and unknown fields remain intact. New draft documents require an explicit status and cannot be read by public queries or direct Firestore requests.
+
+Firebase Hosting configuration for each existing site is retained. Vercel configurations retain the current Flutter outputs and routes; generated project HTML must be copied with the build. No production publishing command was run.
+
+After the preparation above, generate production artifacts explicitly. The existing Melos build scripts now select Firebase mode; the run scripts and local preview use browser storage. The local preview outputs are separate from the hosting directories; checked-in legacy builds are not the redesigned production artifacts.
+
+```sh
+(cd apps/portfolio && flutter build web --no-pub --no-wasm-dry-run \
+  --dart-define=USE_FIREBASE=true)
+(cd apps/dashboard && flutter build web --no-pub --no-wasm-dry-run \
+  --dart-define=USE_FIREBASE=true)
+python3 tools/export_metadata.py --content /path/to/portfolio-content.json \
+  --web-root apps/portfolio/build/web
+```
+
+## Search, sharing, and static fallback
+
+`tools/export_metadata.py` builds semantic HTML fallback pages, route-specific titles/descriptions, Open Graph metadata, canonical links, Person structured data, a sitemap, and robots directives from the same content model. It excludes drafts and escapes user content. The fallback is readable before Flutter starts or if it fails to load. Published-content exports convert hosted screenshot references into public URLs governed by the publication rules, without creating download tokens; supported local image uploads also remain visible in generated pages.
+
+```sh
+python3 tools/export_metadata.py --content /path/to/portfolio-content.json
+```
+
+Flutter updates browser titles and metadata immediately after edits. Search crawlers and sharing services can use the generated HTML. **Static fallback and social previews require regeneration and a rebuild after public content or publication changes.** They are a snapshot, not server rendering. Previously published fallback pages must be removed when unpublishing a project; the exporter cleans its generated route directory on each run. Flutter's [app-centric web rendering](https://docs.flutter.dev/platform-integration/web/faq#search-engine-optimization-seo) still limits dynamic indexing compared with a server-rendered document site.
+
+## Checks
+
+```sh
+dart analyze .
+(cd apps/portfolio && flutter test --no-pub)
+(cd apps/dashboard && flutter test --no-pub)
+python3 tools/test_metadata.py
+firebase emulators:exec --project demo-portfolio --only firestore,storage \
+  'node --test tools/security/rules.test.mjs'
+```
+
+Install `tools/security` dependencies before rule tests. Rule tests cover anonymous and non-admin denial, direct draft access, publication, atomic ordering, message privacy and throttling, and private screenshot reads. Flutter tests cover persistence, case-study compatibility, ordering, editorial layouts from 320 to 1920 pixels, reduced motion, and unsaved editor changes.
+
+Browser verification uses Playwright and local Chrome. Install `tools/browser` dependencies and run `npm test` there while the preview is running. It exercises actual controls, saves and reloads content, checks public publication behavior, and captures responsive screenshots in `.preview`.
+
+Run `node tools/browser/auth_verify.cjs` with the Firebase integration preview to check sign-in, non-admin denial, authenticated persistence, public updates, metadata exports, anonymous contact submissions, mobile inbox dialogs, and session protection of open editors. `node tools/browser/media_verify.cjs` checks actual uploads, private draft media, publication, safe deletion, and CV downloads. Demo sign-ins use tab-scoped sessions so public visitors and the owner can be exercised independently on the local shared origin.
+
+## Local Firebase integration preview
+
+```sh
+firebase emulators:start --project demo-portfolio --only firestore,auth,storage
+# In another terminal:
+FIRESTORE_EMULATOR_HOST=127.0.0.1:8080 \
+FIREBASE_AUTH_EMULATOR_HOST=127.0.0.1:9099 \
+  node tools/security/seed_emulators.mjs
+(cd apps/portfolio && flutter build web --debug --no-pub --no-wasm-dry-run \
+  --dart-define=USE_FIREBASE=true --dart-define=USE_EMULATORS=true \
+  --output ../../.preview/firebase/portfolio)
+(cd apps/dashboard && flutter build web --debug --no-pub --no-wasm-dry-run --base-href /admin/ \
+  --dart-define=USE_FIREBASE=true --dart-define=USE_EMULATORS=true \
+  --output ../../.preview/firebase/dashboard)
+python3 tools/preview_server.py --port 4174 --firebase
+```
+
+Only the demo project is used with `USE_EMULATORS=true`. The seed tool refuses to run without emulator environment variables. Demo owner: `studio@example.test`; non-admin: `visitor@example.test`; local password for both: `local-preview-only`. These are local fixture accounts.
+
+Use debug builds for this integration preview. FlutterFire restores emulator sign-in sessions before Firebase initialization only in debug mode; release builds use production Auth initialization. The ordinary local preview and production builds remain release builds.

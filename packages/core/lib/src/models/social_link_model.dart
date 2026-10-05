@@ -21,14 +21,15 @@ class SocialLinkModel {
   }
 
   Map<String, dynamic> toMap() {
-    return {
-      'icon': icon,
-      'url': url,
-      'order': order,
-    };
+    return {'icon': icon, 'url': url, 'order': order};
   }
 
-  SocialLinkModel copyWith({String? id, String? icon, String? url, int? order}) {
+  SocialLinkModel copyWith({
+    String? id,
+    String? icon,
+    String? url,
+    int? order,
+  }) {
     return SocialLinkModel(
       id: id ?? this.id,
       icon: icon ?? this.icon,

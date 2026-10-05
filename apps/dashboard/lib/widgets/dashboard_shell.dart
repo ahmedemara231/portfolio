@@ -1,87 +1,142 @@
 import 'package:core/core.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import '../theme/dashboard_theme.dart';
+import '../content_schema.dart';
+import '../pages/collection_page.dart';
 import '../pages/overview_page.dart';
-import '../pages/projects_page.dart';
-import '../pages/skills_page.dart';
-import '../pages/experience_page.dart';
-import '../pages/messages_page.dart';
 import '../pages/settings_page.dart';
+import '../pages/messages_page.dart';
 
-class _NavItem {
-  final IconData icon;
-  final String label;
-  const _NavItem(this.icon, this.label);
-}
-
-const _navItems = [
-  _NavItem(Icons.dashboard_outlined, 'Overview'),
-  _NavItem(Icons.folder_outlined, 'Projects'),
-  _NavItem(Icons.star_outline, 'Skills'),
-  _NavItem(Icons.work_outline, 'Experience'),
-  _NavItem(Icons.mail_outline, 'Messages'),
-  _NavItem(Icons.settings_outlined, 'Settings'),
+const navigation = [
+  (Icons.space_dashboard_outlined, 'Overview'),
+  (Icons.folder_outlined, 'Projects'),
+  (Icons.star_outline, 'Featured work'),
+  (Icons.work_outline, 'Experience'),
+  (Icons.data_object, 'Flutter packages'),
+  (Icons.layers_outlined, 'Capabilities'),
+  (Icons.school_outlined, 'Education'),
+  (Icons.person_outline, 'Profile & contact'),
+  (Icons.verified_outlined, 'Credibility'),
+  (Icons.link, 'Social links'),
+  (Icons.travel_explore, 'Search & sharing'),
+  (Icons.inbox_outlined, 'Messages'),
+  (Icons.more_horiz, 'More content'),
 ];
 
 class DashboardShell extends StatefulWidget {
   const DashboardShell({super.key});
-
   @override
   State<DashboardShell> createState() => _DashboardShellState();
 }
 
 class _DashboardShellState extends State<DashboardShell> {
-  int _selectedIndex = 0;
-  bool _sidebarOpen = false;
-
-  void _goTo(int index) {
-    setState(() {
-      _selectedIndex = index;
-      _sidebarOpen = false;
-    });
+  int selected = 0;
+  final scaffold = GlobalKey<ScaffoldState>();
+  late final profileStream = FirestoreService.profileStream();
+  void go(int index) {
+    setState(() => selected = index);
+    if (scaffold.currentState?.isDrawerOpen ?? false) Navigator.pop(context);
   }
 
-  late final List<Widget> _pages = <Widget>[
-    OverviewPage(onNavigate: _goTo),
-    const ProjectsPage(),
-    const SkillsPage(),
-    const ExperiencePage(),
-    const MessagesPage(),
-    const SettingsPage(),
-  ];
-
+  Widget page() => switch (selected) {
+    0 => OverviewPage(onNavigate: go),
+    1 => const CollectionPage(schema: projectSchema),
+    2 => const CollectionPage(schema: projectSchema, featuredOnly: true),
+    3 => CollectionPage(schema: schemas[1]),
+    4 => CollectionPage(schema: schemas[2]),
+    5 => CollectionPage(schema: schemas[3]),
+    6 => CollectionPage(schema: schemas[4]),
+    7 => const SettingsPage(),
+    8 => CollectionPage(schema: schemas[5]),
+    9 => CollectionPage(schema: schemas[6]),
+    10 => const SettingsPage(metadata: true),
+    11 => const MessagesPage(),
+    _ => const MoreContentPage(),
+  };
   @override
   Widget build(BuildContext context) {
-    final isDesktop = MediaQuery.sizeOf(context).width >= 1024;
-
+    final desktop = MediaQuery.sizeOf(context).width >= 1050;
     return Scaffold(
+      key: scaffold,
+      drawer: desktop
+          ? null
+          : Drawer(
+              width: 280,
+              backgroundColor: Design.surface,
+              child: sidebar(),
+            ),
       body: Row(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          // Sidebar for desktop
-          if (isDesktop) _buildSidebar(),
-          // Main content
+          if (desktop)
+            SizedBox(
+              width: 250,
+              child: Material(color: Design.surface, child: sidebar()),
+            ),
           Expanded(
             child: Column(
               children: [
-                // Mobile header
-                if (!isDesktop) _buildMobileHeader(),
-                Expanded(
-                  child: Stack(
+                Container(
+                  height: 72,
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  decoration: const BoxDecoration(
+                    color: Design.surface,
+                    border: Border(bottom: BorderSide(color: Design.line)),
+                  ),
+                  child: Row(
                     children: [
-                      Padding(
-                        padding: EdgeInsets.all(isDesktop ? 32 : 16),
-                        child: _pages[_selectedIndex],
-                      ),
-                      // Mobile sidebar overlay
-                      if (!isDesktop && _sidebarOpen) ...[
-                        GestureDetector(
-                          onTap: () => setState(() => _sidebarOpen = false),
-                          child: Container(color: Colors.black54),
+                      if (!desktop)
+                        IconButton(
+                          tooltip: 'Open studio navigation',
+                          onPressed: () => scaffold.currentState?.openDrawer(),
+                          icon: const Icon(Icons.menu),
                         ),
-                        _buildSidebar(),
-                      ],
+                      const Expanded(child: Eyebrow('Portfolio Studio')),
+                      StreamBuilder<Map<String, dynamic>?>(
+                        stream: profileStream,
+                        builder: (context, snap) {
+                          final url = FirestoreService.useFirebase
+                              ? (snap.data?['siteUrl'] ?? '').toString()
+                              : ({'http', 'https'}.contains(Uri.base.scheme)
+                                    ? Uri.base.origin
+                                    : 'http://localhost:4173');
+                          return TextButton.icon(
+                            onPressed: url.isEmpty
+                                ? null
+                                : () => openLink(context, url),
+                            label: Text(
+                              MediaQuery.sizeOf(context).width < 500
+                                  ? 'Preview'
+                                  : 'Open portfolio',
+                            ),
+                            icon: const Icon(Icons.north_east, size: 16),
+                            iconAlignment: IconAlignment.end,
+                          );
+                        },
+                      ),
                     ],
+                  ),
+                ),
+                if (!FirestoreService.useFirebase)
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 24,
+                      vertical: 10,
+                    ),
+                    color: Design.tint,
+                    child: const Text(
+                      'Local preview · Changes are saved in this browser. Production data is untouched.',
+                      style: TextStyle(
+                        fontSize: 11,
+                        color: Design.accent,
+                        height: 1.6,
+                      ),
+                    ),
+                  ),
+                Expanded(
+                  child: Padding(
+                    padding: EdgeInsets.all(desktop ? 36 : 20),
+                    child: KeyedSubtree(key: ValueKey(selected), child: page()),
                   ),
                 ),
               ],
@@ -92,199 +147,125 @@ class _DashboardShellState extends State<DashboardShell> {
     );
   }
 
-  Widget _buildMobileHeader() {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-      decoration: const BoxDecoration(
-        color: DashboardColors.card,
-        border: Border(bottom: BorderSide(color: DashboardColors.border)),
-      ),
-      child: Row(
+  Widget sidebar() => Container(
+    decoration: const BoxDecoration(
+      border: Border(right: BorderSide(color: Design.line)),
+    ),
+    child: SafeArea(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Text('Admin Dashboard',
-              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
-          const Spacer(),
-          IconButton(
-            icon: Icon(_sidebarOpen ? Icons.close : Icons.menu),
-            onPressed: () => setState(() => _sidebarOpen = !_sidebarOpen),
+          const Padding(
+            padding: EdgeInsets.fromLTRB(24, 28, 24, 12),
+            child: PortfolioBrand(),
+          ),
+          const Padding(
+            padding: EdgeInsets.fromLTRB(24, 0, 24, 28),
+            child: Text(
+              'A space for your work.',
+              style: TextStyle(fontSize: 12, color: Design.muted),
+            ),
+          ),
+          Expanded(
+            child: ListView(
+              padding: const EdgeInsets.symmetric(horizontal: 12),
+              children: [
+                for (var i = 0; i < navigation.length; i++)
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 4),
+                    child: ListTile(
+                      selected: i == selected,
+                      selectedTileColor: Design.tint,
+                      selectedColor: Design.accent,
+                      minVerticalPadding: 10,
+                      dense: true,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      leading: Icon(navigation[i].$1, size: 19),
+                      title: Text(
+                        navigation[i].$2,
+                        style: TextStyle(
+                          fontSize: 13,
+                          fontWeight: i == selected
+                              ? FontWeight.w700
+                              : FontWeight.w500,
+                        ),
+                      ),
+                      onTap: () => go(i),
+                    ),
+                  ),
+              ],
+            ),
+          ),
+          const Divider(),
+          Padding(
+            padding: const EdgeInsets.all(16),
+            child: FirestoreService.useFirebase
+                ? TextButton.icon(
+                    onPressed: () => FirebaseAuth.instance.signOut(),
+                    icon: const Icon(Icons.logout, size: 18),
+                    label: const Text('Sign out'),
+                  )
+                : const Text(
+                    'LOCAL WORKSPACE',
+                    style: TextStyle(
+                      fontSize: 10,
+                      color: Design.muted,
+                      letterSpacing: 1.6,
+                    ),
+                  ),
           ),
         ],
       ),
-    );
-  }
-
-  Widget _buildSidebar() {
-    return Material(
-      color: DashboardColors.card,
-      child: SizedBox(
-        width: 256,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            // Header
-            Padding(
-              padding: const EdgeInsets.all(24),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text('Admin Dashboard',
-                      style: TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                          color: DashboardColors.primary)),
-                  const SizedBox(height: 4),
-                  Text('Portfolio Manager',
-                      style: TextStyle(
-                          fontSize: 14,
-                          color: DashboardColors.mutedForeground)),
-                ],
-              ),
-            ),
-            // Nav items
-            Expanded(
-              child: ListView.builder(
-                padding: const EdgeInsets.symmetric(horizontal: 12),
-                itemCount: _navItems.length,
-                itemBuilder: (context, i) {
-                  final item = _navItems[i];
-                  final selected = _selectedIndex == i;
-                  return Padding(
-                    padding: const EdgeInsets.only(bottom: 4),
-                    child: InkWell(
-                      borderRadius: BorderRadius.circular(8),
-                      onTap: () => _goTo(i),
-                      hoverColor: DashboardColors.accent,
-                      child: Ink(
-                        decoration: BoxDecoration(
-                          color: selected
-                              ? DashboardColors.primary
-                              : Colors.transparent,
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 12, vertical: 10),
-                          child: Row(
-                            children: [
-                              Icon(item.icon,
-                                  size: 20,
-                                  color: selected
-                                      ? DashboardColors.primaryForeground
-                                      : DashboardColors.primary),
-                              const SizedBox(width: 12),
-                              Expanded(
-                                child: Text(item.label,
-                                    style: TextStyle(
-                                      color: selected
-                                          ? DashboardColors.primaryForeground
-                                          : DashboardColors.primary,
-                                      fontWeight: FontWeight.w500,
-                                    )),
-                              ),
-                              if (item.label == 'Messages')
-                                StreamBuilder<int>(
-                                  stream: FirestoreService
-                                      .unreadMessagesCountStream(),
-                                  builder: (context, snap) {
-                                    final unread = snap.data ?? 0;
-                                    if (unread == 0) {
-                                      return const SizedBox.shrink();
-                                    }
-                                    return Container(
-                                      padding: const EdgeInsets.symmetric(
-                                          horizontal: 8, vertical: 2),
-                                      decoration: BoxDecoration(
-                                        color: selected
-                                            ? DashboardColors.primaryForeground
-                                            : DashboardColors.primary,
-                                        borderRadius:
-                                            BorderRadius.circular(999),
-                                      ),
-                                      child: Text(
-                                        '$unread',
-                                        style: TextStyle(
-                                          fontSize: 11,
-                                          fontWeight: FontWeight.w700,
-                                          color: selected
-                                              ? DashboardColors.primary
-                                              : DashboardColors
-                                                  .primaryForeground,
-                                        ),
-                                      ),
-                                    );
-                                  },
-                                ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
-                  );
-                },
-              ),
-            ),
-            // Footer
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: const BoxDecoration(
-                border: Border(top: BorderSide(color: DashboardColors.border)),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  _SidebarButton(
-                    icon: Icons.home_outlined,
-                    label: 'View Portfolio',
-                    onTap: () {},
-                  ),
-                  const SizedBox(height: 4),
-                  _SidebarButton(
-                    icon: Icons.logout,
-                    label: 'Logout',
-                    color: DashboardColors.destructive,
-                    onTap: () {},
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
+    ),
+  );
 }
 
-class _SidebarButton extends StatelessWidget {
-  final IconData icon;
-  final String label;
-  final Color? color;
-  final VoidCallback onTap;
-
-  const _SidebarButton({
-    required this.icon,
-    required this.label,
-    this.color,
-    required this.onTap,
-  });
-
+class MoreContentPage extends StatelessWidget {
+  const MoreContentPage({super.key});
   @override
-  Widget build(BuildContext context) {
-    final c = color ?? DashboardColors.primary;
-    return InkWell(
-      borderRadius: BorderRadius.circular(8),
-      onTap: onTap,
-      hoverColor: DashboardColors.accent,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-        child: Row(
-          children: [
-            Icon(icon, size: 20, color: c),
-            const SizedBox(width: 12),
-            Text(label,
-                style: TextStyle(color: c, fontWeight: FontWeight.w500)),
-          ],
+  Widget build(BuildContext context) => SingleChildScrollView(
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Eyebrow('Preserved collections'),
+        const SizedBox(height: 16),
+        const Text(
+          'More content',
+          style: TextStyle(fontSize: 34, fontWeight: FontWeight.w700),
         ),
-      ),
-    );
-  }
+        const SizedBox(height: 16),
+        const Text(
+          'Existing collections remain editable. Additional details are shown when populated.',
+          style: TextStyle(color: Design.muted, height: 1.7),
+        ),
+        const SizedBox(height: 24),
+        for (final schema in schemas.skip(7))
+          Padding(
+            padding: const EdgeInsets.only(bottom: 12),
+            child: ListTile(
+              title: Text(schema.title),
+              subtitle: Text(
+                schema.description,
+                style: const TextStyle(color: Design.muted, fontSize: 12),
+              ),
+              trailing: const Icon(Icons.arrow_forward, size: 18),
+              onTap: () => Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => Scaffold(
+                    appBar: AppBar(title: Text(schema.title)),
+                    body: Padding(
+                      padding: const EdgeInsets.all(24),
+                      child: CollectionPage(schema: schema),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+      ],
+    ),
+  );
 }

@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 IconData mapIcon(String? name) {
   if (name == null) return Icons.circle;
@@ -62,29 +61,10 @@ const _materialIcons = <String, IconData>{
 };
 
 const _faIcons = <String, IconData>{
-  'github': FontAwesomeIcons.github,
-  'linkedin': FontAwesomeIcons.linkedin,
-  'twitter': FontAwesomeIcons.twitter,
-  'envelope': FontAwesomeIcons.envelope,
-  'facebook': FontAwesomeIcons.facebook,
-  'instagram': FontAwesomeIcons.instagram,
-  'youtube': FontAwesomeIcons.youtube,
-  'tiktok': FontAwesomeIcons.tiktok,
-  'discord': FontAwesomeIcons.discord,
-  'telegram': FontAwesomeIcons.telegram,
-  'whatsapp': FontAwesomeIcons.whatsapp,
-  'reddit': FontAwesomeIcons.reddit,
-  'dribbble': FontAwesomeIcons.dribbble,
-  'behance': FontAwesomeIcons.behance,
-  'medium': FontAwesomeIcons.medium,
-  'stackoverflow': FontAwesomeIcons.stackOverflow,
-  'globe': FontAwesomeIcons.globe,
-  'link': FontAwesomeIcons.link,
-  'x_twitter': FontAwesomeIcons.xTwitter,
-  'threads': FontAwesomeIcons.threads,
-  'snapchat': FontAwesomeIcons.snapchat,
-  'pinterest': FontAwesomeIcons.pinterest,
-  'dev': FontAwesomeIcons.dev,
-  'hashnode': FontAwesomeIcons.hashnode,
-  'kaggle': FontAwesomeIcons.kaggle,
+  'github': Icons.code,
+  'linkedin': Icons.work_outline,
+  'envelope': Icons.mail_outline,
+  'gmail': Icons.mail_outline,
+  'globe': Icons.language,
+  'link': Icons.link,
 };

@@ -12,14 +12,18 @@ resolution: workspace
 dependencies:
   flutter:
     sdk: flutter
+  flutter_web_plugins:
+    sdk: flutter
   core:
   cupertino_icons: ^1.0.8
   firebase_core: ^4.3.0
   cloud_firestore: ^6.1.2
+  firebase_auth: ^6.1.0
+  firebase_storage: ^13.0.0
   url_launcher: ^6.3.0
-  font_awesome_flutter: ^10.7.0
 
 dev_dependencies:
+  shared_preferences: ^2.5.3
   flutter_test:
     sdk: flutter
   flutter_lints: ^5.0.0

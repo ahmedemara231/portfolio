@@ -4,12 +4,7 @@ class StatModel {
   final String label;
   final int order;
 
-  const StatModel({
-    this.id,
-    this.value = '',
-    this.label = '',
-    this.order = 0,
-  });
+  const StatModel({this.id, this.value = '', this.label = '', this.order = 0});
 
   factory StatModel.fromMap(Map<String, dynamic> map, [String? id]) {
     return StatModel(
@@ -21,11 +16,7 @@ class StatModel {
   }
 
   Map<String, dynamic> toMap() {
-    return {
-      'value': value,
-      'label': label,
-      'order': order,
-    };
+    return {'value': value, 'label': label, 'order': order};
   }
 
   StatModel copyWith({String? id, String? value, String? label, int? order}) {

@@ -47,3 +47,11 @@ app.*.map.json
 /android/app/profile
 /android/app/release
 .vercel
+
+**/node_modules/
+**/.DS_Store
+.backups/
+.preview/
+firebase-debug.log
+firestore-debug.log
+ui-debug.log

@@ -23,9 +23,9 @@ scripts:
     description: Run dashboard web app
 
   build:portfolio:
-    run: cd apps/portfolio && flutter build web
-    description: Build portfolio for web
+    run: cd apps/portfolio && flutter build web --dart-define=USE_FIREBASE=true
+    description: Build portfolio for Firebase after production preparation
 
   build:dashboard:
-    run: cd apps/dashboard && flutter build web
-    description: Build dashboard for web
+    run: cd apps/dashboard && flutter build web --dart-define=USE_FIREBASE=true
+    description: Build authenticated dashboard after production preparation

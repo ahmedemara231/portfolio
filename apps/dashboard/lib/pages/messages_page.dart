@@ -29,11 +29,18 @@ class _MessagesPageState extends State<MessagesPage> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text('Messages',
-                        style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold)),
+                    const Text(
+                      'Messages',
+                      style: TextStyle(
+                        fontSize: 28,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
                     const SizedBox(height: 8),
-                    Text('Inbox from your portfolio contact form',
-                        style: TextStyle(color: DashboardColors.mutedForeground)),
+                    Text(
+                      'Inbox from your portfolio contact form',
+                      style: TextStyle(color: DashboardColors.mutedForeground),
+                    ),
                   ],
                 ),
               ),
@@ -43,16 +50,22 @@ class _MessagesPageState extends State<MessagesPage> {
                   final unread = snap.data ?? 0;
                   if (unread == 0) return const SizedBox.shrink();
                   return Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 6,
+                    ),
                     decoration: BoxDecoration(
                       color: DashboardColors.primary.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(999),
                     ),
-                    child: Text('$unread unread',
-                        style: const TextStyle(
-                            fontSize: 13,
-                            fontWeight: FontWeight.w600,
-                            color: DashboardColors.primary)),
+                    child: Text(
+                      '$unread unread',
+                      style: const TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                        color: DashboardColors.primary,
+                      ),
+                    ),
                   );
                 },
               ),
@@ -61,20 +74,22 @@ class _MessagesPageState extends State<MessagesPage> {
           const SizedBox(height: 24),
 
           // Search + filter
-          Row(
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Expanded(
-                child: TextField(
-                  onChanged: (v) => setState(() => _search = v),
-                  decoration: const InputDecoration(
-                    hintText: 'Search by name, email, subject...',
-                    prefixIcon:
-                        Icon(Icons.search, color: DashboardColors.mutedForeground),
-                    fillColor: DashboardColors.card,
+              TextField(
+                onChanged: (v) => setState(() => _search = v),
+                decoration: const InputDecoration(
+                  labelText: 'Search messages',
+                  hintText: 'Search by name, email, subject...',
+                  prefixIcon: Icon(
+                    Icons.search,
+                    color: DashboardColors.mutedForeground,
                   ),
+                  fillColor: DashboardColors.card,
                 ),
               ),
-              const SizedBox(width: 12),
+              const SizedBox(height: 12),
               SegmentedButton<_Filter>(
                 segments: const [
                   ButtonSegment(value: _Filter.all, label: Text('All')),
@@ -110,8 +125,7 @@ class _MessagesPageState extends State<MessagesPage> {
                 if (_filter == _Filter.unread && read) return false;
                 if (_filter == _Filter.read && !read) return false;
                 if (q.isEmpty) return true;
-                bool match(String? s) =>
-                    (s ?? '').toLowerCase().contains(q);
+                bool match(String? s) => (s ?? '').toLowerCase().contains(q);
                 return match(m['name']) ||
                     match(m['email']) ||
                     match(m['subject']) ||
@@ -119,9 +133,11 @@ class _MessagesPageState extends State<MessagesPage> {
               }).toList();
 
               if (filtered.isEmpty) {
-                return _emptyCard(all.isEmpty
-                    ? 'No messages yet. Submissions from the contact form will appear here.'
-                    : 'No messages match this filter.');
+                return _emptyCard(
+                  all.isEmpty
+                      ? 'No messages yet. Submissions from the contact form will appear here.'
+                      : 'No messages match this filter.',
+                );
               }
 
               return Container(
@@ -160,12 +176,17 @@ class _MessagesPageState extends State<MessagesPage> {
       ),
       child: Column(
         children: [
-          const Icon(Icons.inbox_outlined,
-              size: 40, color: DashboardColors.mutedForeground),
+          const Icon(
+            Icons.inbox_outlined,
+            size: 40,
+            color: DashboardColors.mutedForeground,
+          ),
           const SizedBox(height: 12),
-          Text(text,
-              textAlign: TextAlign.center,
-              style: const TextStyle(color: DashboardColors.mutedForeground)),
+          Text(
+            text,
+            textAlign: TextAlign.center,
+            style: const TextStyle(color: DashboardColors.mutedForeground),
+          ),
         ],
       ),
     );
@@ -193,164 +214,189 @@ class _MessageRow extends StatelessWidget {
     final read = (data['read'] ?? false) == true;
     final replied = (data['replied'] ?? false) == true;
     final ts = data['createdAt'];
-    final when = ts is Timestamp ? ts.toDate() : null;
+    final when = ts is Timestamp
+        ? ts.toDate()
+        : DateTime.tryParse(ts?.toString() ?? '');
 
     return Material(
       color: Colors.transparent,
-      child: InkWell(
+      child: Semantics(
+        button: true,
+        label: 'Open message from $name: $subject',
         onTap: () => _openMessage(context),
-        hoverColor: DashboardColors.accent,
-        child: Container(
-          decoration: BoxDecoration(
-            border: Border(
-              bottom: BorderSide(
-                color: showDivider
-                    ? DashboardColors.border
-                    : Colors.transparent,
+        child: InkWell(
+          excludeFromSemantics: true,
+          onTap: () => _openMessage(context),
+          hoverColor: DashboardColors.accent,
+          child: Container(
+            decoration: BoxDecoration(
+              border: Border(
+                bottom: BorderSide(
+                  color: showDivider
+                      ? DashboardColors.border
+                      : Colors.transparent,
+                ),
               ),
             ),
-          ),
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Unread dot / avatar
-              Container(
-                width: 36,
-                height: 36,
-                margin: const EdgeInsets.only(right: 12),
-                decoration: BoxDecoration(
-                  color: DashboardColors.primary.withValues(alpha: 0.1),
-                  shape: BoxShape.circle,
-                ),
-                alignment: Alignment.center,
-                child: Text(
-                  name.isNotEmpty ? name[0].toUpperCase() : '?',
-                  style: const TextStyle(
-                      fontWeight: FontWeight.w600,
-                      color: DashboardColors.primary),
-                ),
-              ),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        if (!read)
-                          Container(
-                            width: 8,
-                            height: 8,
-                            margin: const EdgeInsets.only(right: 8),
-                            decoration: const BoxDecoration(
-                              color: DashboardColors.primary,
-                              shape: BoxShape.circle,
-                            ),
-                          ),
-                        Flexible(
-                          child: Text(
-                            name.isEmpty ? '(no name)' : name,
-                            style: TextStyle(
-                              fontSize: 14,
-                              fontWeight:
-                                  read ? FontWeight.w500 : FontWeight.w700,
-                            ),
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ),
-                        if (email.isNotEmpty) ...[
-                          const SizedBox(width: 8),
-                          Flexible(
-                            child: Text('<$email>',
-                                style: const TextStyle(
-                                    fontSize: 12,
-                                    color: DashboardColors.mutedForeground),
-                                overflow: TextOverflow.ellipsis),
-                          ),
-                        ],
-                      ],
-                    ),
-                    const SizedBox(height: 4),
-                    Row(
-                      children: [
-                        Flexible(
-                          child: Text(
-                            subject.isEmpty ? '(no subject)' : subject,
-                            style: TextStyle(
-                              fontSize: 13,
-                              fontWeight:
-                                  read ? FontWeight.w400 : FontWeight.w600,
-                            ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ),
-                        if (replied) ...[
-                          const SizedBox(width: 8),
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 6, vertical: 2),
-                            decoration: BoxDecoration(
-                              color: DashboardColors.greenLight,
-                              borderRadius: BorderRadius.circular(4),
-                            ),
-                            child: const Text('Replied',
-                                style: TextStyle(
-                                    fontSize: 10,
-                                    fontWeight: FontWeight.w600,
-                                    color: DashboardColors.green)),
-                          ),
-                        ],
-                      ],
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      message,
-                      style: const TextStyle(
-                          fontSize: 13,
-                          color: DashboardColors.mutedForeground),
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(width: 12),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  Text(
-                    when == null ? '' : _shortTime(when),
-                    style: const TextStyle(
-                        fontSize: 12, color: DashboardColors.mutedForeground),
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Unread dot / avatar
+                Container(
+                  width: 36,
+                  height: 36,
+                  margin: const EdgeInsets.only(right: 12),
+                  decoration: BoxDecoration(
+                    color: DashboardColors.primary.withValues(alpha: 0.1),
+                    shape: BoxShape.circle,
                   ),
-                  const SizedBox(height: 8),
-                  Row(
-                    mainAxisSize: MainAxisSize.min,
+                  alignment: Alignment.center,
+                  child: Text(
+                    name.isNotEmpty ? name[0].toUpperCase() : '?',
+                    style: const TextStyle(
+                      fontWeight: FontWeight.w600,
+                      color: DashboardColors.primary,
+                    ),
+                  ),
+                ),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      IconButton(
-                        tooltip: read ? 'Mark as unread' : 'Mark as read',
-                        icon: Icon(
-                          read
-                              ? Icons.mark_email_unread_outlined
-                              : Icons.mark_email_read_outlined,
-                          size: 18,
-                        ),
-                        onPressed: () => _toggleRead(context, !read),
-                        splashRadius: 18,
+                      Row(
+                        children: [
+                          if (!read)
+                            Container(
+                              width: 8,
+                              height: 8,
+                              margin: const EdgeInsets.only(right: 8),
+                              decoration: const BoxDecoration(
+                                color: DashboardColors.primary,
+                                shape: BoxShape.circle,
+                              ),
+                            ),
+                          Flexible(
+                            child: Text(
+                              name.isEmpty ? '(no name)' : name,
+                              style: TextStyle(
+                                fontSize: 14,
+                                fontWeight: read
+                                    ? FontWeight.w500
+                                    : FontWeight.w700,
+                              ),
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                          if (email.isNotEmpty) ...[
+                            const SizedBox(width: 8),
+                            Flexible(
+                              child: Text(
+                                '<$email>',
+                                style: const TextStyle(
+                                  fontSize: 12,
+                                  color: DashboardColors.mutedForeground,
+                                ),
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                          ],
+                        ],
                       ),
-                      IconButton(
-                        tooltip: 'Delete',
-                        icon: const Icon(Icons.delete_outline,
-                            size: 18, color: DashboardColors.destructive),
-                        onPressed: () => _confirmDelete(context),
-                        splashRadius: 18,
+                      const SizedBox(height: 4),
+                      Row(
+                        children: [
+                          Flexible(
+                            child: Text(
+                              subject.isEmpty ? '(no subject)' : subject,
+                              style: TextStyle(
+                                fontSize: 13,
+                                fontWeight: read
+                                    ? FontWeight.w400
+                                    : FontWeight.w600,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                          if (replied) ...[
+                            const SizedBox(width: 8),
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 6,
+                                vertical: 2,
+                              ),
+                              decoration: BoxDecoration(
+                                color: DashboardColors.greenLight,
+                                borderRadius: BorderRadius.circular(4),
+                              ),
+                              child: const Text(
+                                'Replied',
+                                style: TextStyle(
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.w600,
+                                  color: DashboardColors.green,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ],
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        message,
+                        style: const TextStyle(
+                          fontSize: 13,
+                          color: DashboardColors.mutedForeground,
+                        ),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
                       ),
                     ],
                   ),
-                ],
-              ),
-            ],
+                ),
+                const SizedBox(width: 12),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    Text(
+                      when == null ? '' : _shortTime(when),
+                      style: const TextStyle(
+                        fontSize: 12,
+                        color: DashboardColors.mutedForeground,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        IconButton(
+                          tooltip: read ? 'Mark as unread' : 'Mark as read',
+                          icon: Icon(
+                            read
+                                ? Icons.mark_email_unread_outlined
+                                : Icons.mark_email_read_outlined,
+                            size: 18,
+                          ),
+                          onPressed: () => _toggleRead(context, !read),
+                          splashRadius: 18,
+                        ),
+                        IconButton(
+                          tooltip: 'Delete',
+                          icon: const Icon(
+                            Icons.delete_outline,
+                            size: 18,
+                            color: DashboardColors.destructive,
+                          ),
+                          onPressed: () => _confirmDelete(context),
+                          splashRadius: 18,
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ],
+            ),
           ),
         ),
       ),
@@ -365,6 +411,7 @@ class _MessageRow extends StatelessWidget {
     }
     if (!context.mounted) return;
     showDialog(
+      useRootNavigator: false,
       context: context,
       builder: (_) => _MessageDetailDialog(id: id, data: data),
     );
@@ -375,24 +422,27 @@ class _MessageRow extends StatelessWidget {
       await FirestoreService.markMessageRead(id, read: read);
     } catch (e) {
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to update message: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Failed to update message: $e')));
       }
     }
   }
 
   void _confirmDelete(BuildContext context) {
     showDialog(
+      useRootNavigator: false,
       context: context,
       builder: (ctx) => AlertDialog(
         title: const Text('Delete Message'),
         content: Text(
-            'Delete message from "${data['name'] ?? '(no name)'}"? This cannot be undone.'),
+          'Delete message from "${data['name'] ?? '(no name)'}"? This cannot be undone.',
+        ),
         actions: [
           TextButton(
-              onPressed: () => Navigator.pop(ctx),
-              child: const Text('Cancel')),
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Cancel'),
+          ),
           ElevatedButton(
             onPressed: () async {
               Navigator.pop(ctx);
@@ -407,7 +457,8 @@ class _MessageRow extends StatelessWidget {
               }
             },
             style: ElevatedButton.styleFrom(
-                backgroundColor: DashboardColors.destructive),
+              backgroundColor: DashboardColors.destructive,
+            ),
             child: const Text('Delete'),
           ),
         ],
@@ -428,14 +479,17 @@ class _MessageDetailDialog extends StatelessWidget {
     final subject = (data['subject'] ?? '').toString();
     final message = (data['message'] ?? '').toString();
     final ts = data['createdAt'];
-    final when = ts is Timestamp ? ts.toDate() : null;
+    final when = ts is Timestamp
+        ? ts.toDate()
+        : DateTime.tryParse(ts?.toString() ?? '');
 
-    return Dialog(
+    return ContentDialog(
+      label: subject.isEmpty ? 'Message details' : subject,
       insetPadding: const EdgeInsets.all(24),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: ConstrainedBox(
         constraints: const BoxConstraints(maxWidth: 640),
-        child: Padding(
+        child: SingleChildScrollView(
           padding: const EdgeInsets.all(24),
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -447,10 +501,13 @@ class _MessageDetailDialog extends StatelessWidget {
                     child: Text(
                       subject.isEmpty ? '(no subject)' : subject,
                       style: const TextStyle(
-                          fontSize: 20, fontWeight: FontWeight.bold),
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ),
                   IconButton(
+                    tooltip: 'Close message',
                     onPressed: () => Navigator.pop(context),
                     icon: const Icon(Icons.close),
                   ),
@@ -465,41 +522,63 @@ class _MessageDetailDialog extends StatelessWidget {
                   Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      const Icon(Icons.person_outline,
-                          size: 14, color: DashboardColors.mutedForeground),
+                      const Icon(
+                        Icons.person_outline,
+                        size: 14,
+                        color: DashboardColors.mutedForeground,
+                      ),
                       const SizedBox(width: 4),
-                      Text(name.isEmpty ? '(no name)' : name,
+                      Flexible(
+                        child: Text(
+                          name.isEmpty ? '(no name)' : name,
                           style: const TextStyle(
-                              fontSize: 13,
-                              color: DashboardColors.mutedForeground)),
+                            fontSize: 13,
+                            color: DashboardColors.mutedForeground,
+                          ),
+                        ),
+                      ),
                     ],
                   ),
                   if (email.isNotEmpty)
                     Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        const Icon(Icons.mail_outline,
-                            size: 14,
-                            color: DashboardColors.mutedForeground),
+                        const Icon(
+                          Icons.mail_outline,
+                          size: 14,
+                          color: DashboardColors.mutedForeground,
+                        ),
                         const SizedBox(width: 4),
-                        Text(email,
+                        Flexible(
+                          child: Text(
+                            email,
                             style: const TextStyle(
-                                fontSize: 13,
-                                color: DashboardColors.mutedForeground)),
+                              fontSize: 13,
+                              color: DashboardColors.mutedForeground,
+                            ),
+                          ),
+                        ),
                       ],
                     ),
                   if (when != null)
                     Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        const Icon(Icons.schedule,
-                            size: 14,
-                            color: DashboardColors.mutedForeground),
+                        const Icon(
+                          Icons.schedule,
+                          size: 14,
+                          color: DashboardColors.mutedForeground,
+                        ),
                         const SizedBox(width: 4),
-                        Text(_fullTime(when),
+                        Flexible(
+                          child: Text(
+                            _fullTime(when),
                             style: const TextStyle(
-                                fontSize: 13,
-                                color: DashboardColors.mutedForeground)),
+                              fontSize: 13,
+                              color: DashboardColors.mutedForeground,
+                            ),
+                          ),
+                        ),
                       ],
                     ),
                 ],
@@ -517,13 +596,16 @@ class _MessageDetailDialog extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 24),
-              Row(
+              Wrap(
+                spacing: 12,
+                runSpacing: 12,
                 children: [
                   if (email.isNotEmpty)
                     ElevatedButton.icon(
                       onPressed: () {
                         Navigator.pop(context);
                         showDialog(
+                          useRootNavigator: false,
                           context: context,
                           builder: (_) => _ReplyDialog(
                             messageId: id,
@@ -538,12 +620,55 @@ class _MessageDetailDialog extends StatelessWidget {
                       icon: const Icon(Icons.reply, size: 16),
                       label: const Text('Reply'),
                     ),
-                  const Spacer(),
+                  if (data['replied'] != true)
+                    OutlinedButton.icon(
+                      onPressed: () async {
+                        try {
+                          await FirestoreService.markMessageReplied(id);
+                          if (!context.mounted) return;
+                          Navigator.pop(context);
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text('Message marked as replied.'),
+                            ),
+                          );
+                        } catch (e) {
+                          if (context.mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text('Could not update message: $e'),
+                              ),
+                            );
+                          }
+                        }
+                      },
+                      icon: const Icon(Icons.done, size: 16),
+                      label: const Text('Mark as replied'),
+                    ),
                   TextButton.icon(
                     onPressed: () async {
-                      Navigator.pop(context);
+                      final confirmed = await showDialog<bool>(
+                        useRootNavigator: false,
+                        context: context,
+                        builder: (dialog) => AlertDialog(
+                          title: const Text('Delete this message?'),
+                          content: const Text('This cannot be undone.'),
+                          actions: [
+                            TextButton(
+                              onPressed: () => Navigator.pop(dialog, false),
+                              child: const Text('Cancel'),
+                            ),
+                            FilledButton(
+                              onPressed: () => Navigator.pop(dialog, true),
+                              child: const Text('Delete message'),
+                            ),
+                          ],
+                        ),
+                      );
+                      if (confirmed != true) return;
                       try {
                         await FirestoreService.deleteMessage(id);
+                        if (context.mounted) Navigator.pop(context);
                       } catch (e) {
                         if (context.mounted) {
                           ScaffoldMessenger.of(context).showSnackBar(
@@ -552,10 +677,15 @@ class _MessageDetailDialog extends StatelessWidget {
                         }
                       }
                     },
-                    icon: const Icon(Icons.delete_outline,
-                        size: 16, color: DashboardColors.destructive),
-                    label: const Text('Delete',
-                        style: TextStyle(color: DashboardColors.destructive)),
+                    icon: const Icon(
+                      Icons.delete_outline,
+                      size: 16,
+                      color: DashboardColors.destructive,
+                    ),
+                    label: const Text(
+                      'Delete',
+                      style: TextStyle(color: DashboardColors.destructive),
+                    ),
                   ),
                 ],
               ),
@@ -594,6 +724,7 @@ class _ReplyDialogState extends State<_ReplyDialog> {
   late final TextEditingController _bodyCtrl;
   bool _includeQuote = true;
   bool _sending = false;
+  final _form = GlobalKey<FormState>();
 
   @override
   void initState() {
@@ -603,8 +734,8 @@ class _ReplyDialogState extends State<_ReplyDialog> {
       text: widget.originalSubject.isEmpty
           ? 'Re:'
           : (widget.originalSubject.toLowerCase().startsWith('re:')
-              ? widget.originalSubject
-              : 'Re: ${widget.originalSubject}'),
+                ? widget.originalSubject
+                : 'Re: ${widget.originalSubject}'),
     );
     final greeting = widget.toName.isEmpty ? 'Hi,' : 'Hi ${widget.toName},';
     _bodyCtrl = TextEditingController(text: '$greeting\n\n\n');
@@ -631,7 +762,9 @@ class _ReplyDialogState extends State<_ReplyDialog> {
   }
 
   String _composeBody() {
-    return _includeQuote ? '${_bodyCtrl.text}${_quotedOriginal()}' : _bodyCtrl.text;
+    return _includeQuote
+        ? '${_bodyCtrl.text}${_quotedOriginal()}'
+        : _bodyCtrl.text;
   }
 
   Uri _mailtoUri() {
@@ -647,14 +780,16 @@ class _ReplyDialogState extends State<_ReplyDialog> {
 
   String _encodeMailtoQuery(Map<String, String> params) {
     return params.entries
-        .map((e) =>
-            '${Uri.encodeQueryComponent(e.key)}=${Uri.encodeQueryComponent(e.value)}')
+        .map(
+          (e) =>
+              '${Uri.encodeQueryComponent(e.key)}=${Uri.encodeQueryComponent(e.value)}',
+        )
         .join('&');
   }
 
   Future<void> _send() async {
     final to = _toCtrl.text.trim();
-    if (to.isEmpty || _sending) return;
+    if (!_form.currentState!.validate() || _sending) return;
     setState(() => _sending = true);
     final uri = _mailtoUri();
     try {
@@ -664,141 +799,172 @@ class _ReplyDialogState extends State<_ReplyDialog> {
         await Clipboard.setData(ClipboardData(text: uri.toString()));
         if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text(
-              'No mail client found. The mailto link was copied to your clipboard.')),
+          const SnackBar(
+            content: Text(
+              'No mail client found. The mailto link was copied to your clipboard.',
+            ),
+          ),
         );
       }
-      await FirestoreService.markMessageReplied(widget.messageId);
       if (!mounted) return;
       Navigator.pop(context);
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Reply opened for $to and marked as replied.')),
+        SnackBar(
+          content: Text(
+            ok
+                ? 'Reply prepared for $to. Send it from your mail client, then mark the message as replied.'
+                : 'Reply link copied. Send it from your mail client, then mark the message as replied.',
+          ),
+        ),
       );
     } catch (e) {
       if (!mounted) return;
       setState(() => _sending = false);
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Failed to open mail client: $e')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Failed to open mail client: $e')));
     }
   }
 
   Future<void> _copyToClipboard() async {
-    await Clipboard.setData(ClipboardData(
-      text: 'To: ${_toCtrl.text}\n'
-          'Subject: ${_subjectCtrl.text}\n\n'
-          '${_composeBody()}',
-    ));
-    if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Reply copied to clipboard.')),
+    await Clipboard.setData(
+      ClipboardData(
+        text:
+            'To: ${_toCtrl.text}\n'
+            'Subject: ${_subjectCtrl.text}\n\n'
+            '${_composeBody()}',
+      ),
     );
+    if (!mounted) return;
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(const SnackBar(content: Text('Reply copied to clipboard.')));
   }
 
   @override
   Widget build(BuildContext context) {
-    return Dialog(
+    return ContentDialog(
+      label: 'Compose reply',
       insetPadding: const EdgeInsets.all(24),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: ConstrainedBox(
         constraints: const BoxConstraints(maxWidth: 640),
-        child: Padding(
+        child: SingleChildScrollView(
           padding: const EdgeInsets.all(24),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  const Expanded(
-                    child: Text('Reply',
+          child: Form(
+            key: _form,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    const Expanded(
+                      child: Text(
+                        'Reply',
                         style: TextStyle(
-                            fontSize: 20, fontWeight: FontWeight.bold)),
-                  ),
-                  IconButton(
-                    onPressed: () => Navigator.pop(context),
-                    icon: const Icon(Icons.close),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 16),
-              _label('To'),
-              TextField(
-                controller: _toCtrl,
-                keyboardType: TextInputType.emailAddress,
-                decoration: const InputDecoration(hintText: 'name@example.com'),
-              ),
-              const SizedBox(height: 12),
-              _label('Subject'),
-              TextField(
-                controller: _subjectCtrl,
-                decoration: const InputDecoration(hintText: 'Subject'),
-              ),
-              const SizedBox(height: 12),
-              _label('Message'),
-              TextField(
-                controller: _bodyCtrl,
-                minLines: 8,
-                maxLines: 14,
-                decoration: const InputDecoration(
-                  hintText: 'Write your reply...',
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                    IconButton(
+                      tooltip: 'Close reply',
+                      onPressed: () => Navigator.pop(context),
+                      icon: const Icon(Icons.close),
+                    ),
+                  ],
                 ),
-              ),
-              const SizedBox(height: 8),
-              Row(
-                children: [
-                  Checkbox(
-                    value: _includeQuote,
-                    onChanged: (v) =>
-                        setState(() => _includeQuote = v ?? true),
+                const SizedBox(height: 16),
+                TextFormField(
+                  controller: _toCtrl,
+                  keyboardType: TextInputType.emailAddress,
+                  decoration: const InputDecoration(
+                    labelText: 'To',
+                    hintText: 'name@example.com',
                   ),
-                  const Text('Quote original message',
-                      style: TextStyle(fontSize: 13)),
-                ],
-              ),
-              const SizedBox(height: 16),
-              const Divider(),
-              const SizedBox(height: 12),
-              Row(
-                children: [
-                  TextButton.icon(
-                    onPressed: _copyToClipboard,
-                    icon: const Icon(Icons.copy, size: 16),
-                    label: const Text('Copy'),
+                  validator: (v) =>
+                      RegExp(
+                        r'^[^\s@]+@[^\s@]+\.[^\s@]+$',
+                      ).hasMatch(v?.trim() ?? '')
+                      ? null
+                      : 'Enter a valid email address.',
+                ),
+                const SizedBox(height: 12),
+                TextFormField(
+                  controller: _subjectCtrl,
+                  decoration: const InputDecoration(labelText: 'Subject'),
+                ),
+                const SizedBox(height: 12),
+                TextFormField(
+                  controller: _bodyCtrl,
+                  minLines: 4,
+                  maxLines: 14,
+                  decoration: const InputDecoration(
+                    labelText: 'Your reply',
+                    hintText: 'Write your reply...',
                   ),
-                  const Spacer(),
-                  OutlinedButton(
-                    onPressed: () => Navigator.pop(context),
-                    child: const Text('Cancel'),
-                  ),
-                  const SizedBox(width: 12),
-                  ElevatedButton.icon(
-                    onPressed: _toCtrl.text.trim().isEmpty || _sending
-                        ? null
-                        : _send,
-                    icon: _sending
-                        ? const SizedBox(
-                            width: 14,
-                            height: 14,
-                            child: CircularProgressIndicator(
-                                strokeWidth: 2, color: Colors.white))
-                        : const Icon(Icons.send, size: 16),
-                    label: const Text('Open in Mail'),
-                  ),
-                ],
-              ),
-            ],
+                  validator: (v) => v == null || v.trim().isEmpty
+                      ? 'Write your reply.'
+                      : null,
+                ),
+                const SizedBox(height: 8),
+                Row(
+                  children: [
+                    Checkbox(
+                      value: _includeQuote,
+                      onChanged: (v) =>
+                          setState(() => _includeQuote = v ?? true),
+                    ),
+                    const Expanded(
+                      child: Text(
+                        'Quote original message',
+                        style: TextStyle(fontSize: 13),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                const Divider(),
+                const SizedBox(height: 12),
+                Wrap(
+                  spacing: 12,
+                  runSpacing: 12,
+                  children: [
+                    TextButton.icon(
+                      onPressed: _copyToClipboard,
+                      icon: const Icon(Icons.copy, size: 16),
+                      label: const Text('Copy'),
+                    ),
+                    OutlinedButton(
+                      onPressed: () => Navigator.pop(context),
+                      child: const Text('Cancel'),
+                    ),
+                    ElevatedButton.icon(
+                      onPressed: _toCtrl.text.trim().isEmpty || _sending
+                          ? null
+                          : _send,
+                      icon: _sending
+                          ? const SizedBox(
+                              width: 14,
+                              height: 14,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                color: Colors.white,
+                              ),
+                            )
+                          : const Icon(Icons.send, size: 16),
+                      label: const Text('Open in Mail'),
+                    ),
+                  ],
+                ),
+              ],
+            ),
           ),
         ),
       ),
     );
   }
-
-  Widget _label(String text) => Padding(
-        padding: const EdgeInsets.only(bottom: 6),
-        child: Text(text,
-            style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w500)),
-      );
 }
 
 String _shortTime(DateTime when) {

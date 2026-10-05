@@ -3,25 +3,14 @@ class ToolModel {
   final String name;
   final int order;
 
-  const ToolModel({
-    this.id,
-    this.name = '',
-    this.order = 0,
-  });
+  const ToolModel({this.id, this.name = '', this.order = 0});
 
   factory ToolModel.fromMap(Map<String, dynamic> map, [String? id]) {
-    return ToolModel(
-      id: id,
-      name: map['name'] ?? '',
-      order: map['order'] ?? 0,
-    );
+    return ToolModel(id: id, name: map['name'] ?? '', order: map['order'] ?? 0);
   }
 
   Map<String, dynamic> toMap() {
-    return {
-      'name': name,
-      'order': order,
-    };
+    return {'name': name, 'order': order};
   }
 
   ToolModel copyWith({String? id, String? name, int? order}) {

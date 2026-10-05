@@ -1,0 +1,907 @@
+{
+  "profile": {
+    "name": "Ahmed Emara",
+    "professionalTitle": "Flutter Developer",
+    "badge": "Flutter Developer",
+    "heroTitle": "Mobile apps.\nMade with purpose.",
+    "heroHighlight": "",
+    "heroDescription": "I build production Flutter apps for marketplaces, services, fitness, and location-based products.",
+    "heroImage": "",
+    "cvUrl": "/files/ahmed-emara-cv.pdf",
+    "cvLabel": "Ahmed Emara · CV (PDF)",
+    "availabilityStatus": "available",
+    "availabilityNote": "Open to meaningful opportunities",
+    "aboutTitle": "A little about me.",
+    "aboutDescription": "I’m Ahmed, a Flutter developer based in Cairo. I enjoy turning complex requirements into clear, reliable mobile experiences and building reusable tools that make everyday development easier.",
+    "skillsTitle": "Built on solid foundations.",
+    "skillsDescription": "The capabilities I bring to a product, from the first API conversation to the store release.",
+    "experienceTitle": "From requirements to release.",
+    "experienceDescription": "Hands-on delivery, thoughtful architecture, and close collaboration.",
+    "contactTitle": "Let’s build something\npeople use.",
+    "contactDescription": "Have a Flutter role or a mobile product in mind? I’d be glad to hear about it.",
+    "contactEmail": "emara8028@gmail.com",
+    "contactPhone": "+201069897625",
+    "contactLocation": "Cairo, Egypt",
+    "contactCtaTitle": "",
+    "contactCtaDescription": "",
+    "footerBrand": "Ahmed Emara",
+    "footerDescription": "Mobile Developer — Flutter",
+    "copyright": "",
+    "languages": "Arabic · Native\nEnglish · B1",
+    "seoTitle": "Ahmed Emara — Flutter Developer",
+    "seoDescription": "Flutter developer in Cairo with 3+ years of experience, 20+ production mobile applications, and 3 published Flutter packages. Explore selected work and get in touch.",
+    "siteUrl": "https://portfolio-ce1ae.web.app",
+    "socialImage": "/assets/packages/core/assets/projects/fix-3.webp",
+    "projectsTitle": "Selected work.",
+    "projectsDescription": "Real products. Different challenges. One focus: a reliable mobile experience.",
+    "packagesTitle": "Useful by design.\nOpen by default.",
+    "packagesDescription": "Three Flutter packages built from practical needs and shared with the community.",
+    "contactFormEnabled": true
+  },
+  "collections": {
+    "stats": {
+      "experience": {
+        "order": 0,
+        "status": "published",
+        "value": "3+",
+        "label": "Years of experience"
+      },
+      "applications": {
+        "order": 1,
+        "status": "published",
+        "value": "20+",
+        "label": "Production applications"
+      },
+      "packages": {
+        "order": 2,
+        "status": "published",
+        "value": "3",
+        "label": "Published packages"
+      }
+    },
+    "social_links": {
+      "github": {
+        "order": 0,
+        "status": "published",
+        "icon": "github",
+        "label": "GitHub",
+        "url": "https://github.com/ahmedemara231"
+      },
+      "linkedin": {
+        "order": 1,
+        "status": "published",
+        "icon": "linkedin",
+        "label": "LinkedIn",
+        "url": "https://www.linkedin.com/in/ahmed-emara-11550526a"
+      }
+    },
+    "projects": {
+      "nM7SOlhFUyASMAz1C03u": {
+        "order": 5,
+        "status": "published",
+        "appStoreUrl": "https://apps.apple.com/us/app/fix-client/id6758220705",
+        "tags": [
+          "Service requests & price negotiation",
+          "Real-time chat",
+          "Live provider tracking"
+        ],
+        "rating": 5,
+        "codeUrl": "",
+        "tagColor": "",
+        "title": "FIX",
+        "image": "packages/core/assets/projects/fix-3-thumb.webp",
+        "downloads": "1K",
+        "description": "Connected client and provider apps that make repair services easier to request, coordinate, and follow.",
+        "googlePlayUrl": "https://play.google.com/store/apps/details?id=com.cs.flutterTech.fixAppUser&pli=1",
+        "slug": "fix",
+        "category": "Services",
+        "overview": "Connected client and provider apps that make repair services easier to request, coordinate, and follow.",
+        "audience": "Clients requesting repairs and providers managing service jobs.",
+        "features": [
+          "Service requests & price negotiation",
+          "Real-time chat",
+          "Live provider tracking",
+          "Job progress updates"
+        ],
+        "capabilities": [
+          "Service requests & price negotiation",
+          "Real-time chat",
+          "Live provider tracking",
+          "Job progress updates"
+        ],
+        "date": "January 2026",
+        "featured": true,
+        "featuredOrder": 0,
+        "role": "",
+        "challenges": "",
+        "decisions": "",
+        "technologies": [],
+        "outcomes": "",
+        "gallery": [
+          {
+            "url": "packages/core/assets/projects/fix-3.webp",
+            "thumbnail": "packages/core/assets/projects/fix-3-thumb.webp",
+            "width": 693,
+            "height": 1500,
+            "alt": "FIX service categories",
+            "sourceUrl": "https://is1-ssl.mzstatic.com/image/thumb/PurpleSource211/v4/11/83/df/1183dfec-72fa-44fd-2f74-7f8912239322/Group_1000015686.png/750x1624bb.jpg",
+            "sourcePage": "https://itunes.apple.com/lookup?id=6758220705&country=us"
+          },
+          {
+            "url": "packages/core/assets/projects/fix-4.webp",
+            "thumbnail": "packages/core/assets/projects/fix-4-thumb.webp",
+            "width": 693,
+            "height": 1500,
+            "alt": "FIX repair request journey",
+            "sourceUrl": "https://is1-ssl.mzstatic.com/image/thumb/PurpleSource211/v4/7a/f0/da/7af0dac0-584a-bd1e-92b0-4fe3fb4a9c99/Group_1000015688.png/750x1624bb.jpg",
+            "sourcePage": "https://itunes.apple.com/lookup?id=6758220705&country=us"
+          },
+          {
+            "url": "packages/core/assets/projects/fix-2.webp",
+            "thumbnail": "packages/core/assets/projects/fix-2-thumb.webp",
+            "width": 693,
+            "height": 1500,
+            "alt": "FIX account sign-in",
+            "sourceUrl": "https://is1-ssl.mzstatic.com/image/thumb/PurpleSource221/v4/78/08/0f/78080f66-c906-b950-c176-1e3c8b87b08e/Group_1000015692.png/750x1624bb.jpg",
+            "sourcePage": "https://itunes.apple.com/lookup?id=6758220705&country=us"
+          },
+          {
+            "url": "packages/core/assets/projects/fix-1.webp",
+            "thumbnail": "packages/core/assets/projects/fix-1-thumb.webp",
+            "width": 693,
+            "height": 1500,
+            "alt": "FIX launch screen",
+            "sourceUrl": "https://is1-ssl.mzstatic.com/image/thumb/PurpleSource221/v4/b5/1b/ea/b51bea88-4f86-5059-7b2b-e6414863f0b3/Group_1000015684.png/750x1624bb.jpg",
+            "sourcePage": "https://itunes.apple.com/lookup?id=6758220705&country=us"
+          }
+        ],
+        "imageAlt": "FIX service categories",
+        "imageKind": "screenshot",
+        "additionalLinks": [
+          {
+            "label": "Provider · Google Play",
+            "url": "https://play.google.com/store/apps/details?id=com.cs.flutterTech.fixAppProvider"
+          },
+          {
+            "label": "Provider · App Store",
+            "url": "https://apps.apple.com/us/app/fix-provider/id6788849876"
+          },
+          {
+            "label": "Vendor · App Store",
+            "url": "https://apps.apple.com/us/app/fix-vendor/id6758222626"
+          }
+        ],
+        "seoTitle": "",
+        "seoDescription": ""
+      },
+      "two-days": {
+        "order": 1,
+        "status": "published",
+        "title": "2 Days",
+        "slug": "two-days",
+        "category": "Marketplace",
+        "description": "A marketplace and rental platform connecting buyers, sellers, landlords, and renters across Saudi Arabia.",
+        "overview": "A marketplace and rental platform connecting buyers, sellers, landlords, and renters across Saudi Arabia.",
+        "audience": "Buyers, sellers, landlords, and renters in Saudi Arabia.",
+        "features": [
+          "Location-based distances",
+          "Payment services",
+          "Electronic agreements",
+          "Buying, selling & renting"
+        ],
+        "tags": [
+          "Location-based distances",
+          "Payment services",
+          "Electronic agreements"
+        ],
+        "capabilities": [
+          "Location-based distances",
+          "Payment services",
+          "Electronic agreements",
+          "Buying, selling & renting"
+        ],
+        "date": "February 2026",
+        "featured": true,
+        "featuredOrder": 1,
+        "role": "",
+        "challenges": "",
+        "decisions": "",
+        "technologies": [],
+        "outcomes": "",
+        "gallery": [
+          {
+            "url": "packages/core/assets/projects/two-days-4.webp",
+            "thumbnail": "packages/core/assets/projects/two-days-4-thumb.webp",
+            "width": 693,
+            "height": 1500,
+            "alt": "2 Days marketplace listings",
+            "sourceUrl": "https://is1-ssl.mzstatic.com/image/thumb/PurpleSource211/v4/07/96/1f/07961fdf-ee81-2d89-9088-769a78aeffb5/0x0ss__U00285_U0029.png/750x1624bb.jpg",
+            "sourcePage": "https://itunes.apple.com/lookup?id=6740265856&country=us"
+          },
+          {
+            "url": "packages/core/assets/projects/two-days-2.webp",
+            "thumbnail": "packages/core/assets/projects/two-days-2-thumb.webp",
+            "width": 693,
+            "height": 1500,
+            "alt": "2 Days location selection map",
+            "sourceUrl": "https://is1-ssl.mzstatic.com/image/thumb/PurpleSource221/v4/9c/7c/b3/9c7cb31b-e798-b9a8-d95a-b70ae8ad4abb/0x0ss__U00283_U0029.png/750x1624bb.jpg",
+            "sourcePage": "https://itunes.apple.com/lookup?id=6740265856&country=us"
+          },
+          {
+            "url": "packages/core/assets/projects/two-days-3.webp",
+            "thumbnail": "packages/core/assets/projects/two-days-3-thumb.webp",
+            "width": 693,
+            "height": 1500,
+            "alt": "2 Days account sign-in",
+            "sourceUrl": "https://is1-ssl.mzstatic.com/image/thumb/PurpleSource221/v4/3c/bf/0c/3cbf0c87-54db-d024-3daa-95ff0151e5cb/0x0ss__U00282_U0029.png/750x1624bb.jpg",
+            "sourcePage": "https://itunes.apple.com/lookup?id=6740265856&country=us"
+          },
+          {
+            "url": "packages/core/assets/projects/two-days-1.webp",
+            "thumbnail": "packages/core/assets/projects/two-days-1-thumb.webp",
+            "width": 693,
+            "height": 1500,
+            "alt": "2 Days launch screen",
+            "sourceUrl": "https://is1-ssl.mzstatic.com/image/thumb/PurpleSource211/v4/f7/d3/00/f7d30078-0af8-d094-472d-20b18f3318f5/iPhone_14_-_314.png/750x1624bb.jpg",
+            "sourcePage": "https://itunes.apple.com/lookup?id=6740265856&country=us"
+          }
+        ],
+        "image": "packages/core/assets/projects/two-days-4-thumb.webp",
+        "imageAlt": "2 Days marketplace listings",
+        "imageKind": "screenshot",
+        "googlePlayUrl": "https://play.google.com/store/apps/details?id=com.aait.flutter.twoDays",
+        "appStoreUrl": "https://apps.apple.com/us/app/2days-%D9%8A%D9%88%D9%85%D9%8A%D9%86/id6740265856",
+        "additionalLinks": [],
+        "seoTitle": "",
+        "seoDescription": ""
+      },
+      "IQEK3vfi4hDK4YOyaTQ1": {
+        "order": 3,
+        "status": "published",
+        "tagColor": "",
+        "appStoreUrl": "",
+        "downloads": "1K",
+        "rating": 5,
+        "googlePlayUrl": "https://play.google.com/store/apps/details?id=com.app.be_fit",
+        "description": "A fitness companion for exploring exercises, tracking progress, and building a weekly training routine.",
+        "codeUrl": "",
+        "tags": [
+          "Exercise discovery",
+          "Progress tracking",
+          "Personalized exercises"
+        ],
+        "title": "Be Fit",
+        "image": "packages/core/assets/projects/be-fit-2-thumb.webp",
+        "slug": "be-fit",
+        "category": "Fitness",
+        "overview": "A fitness companion for exploring exercises, tracking progress, and building a weekly training routine.",
+        "audience": "People planning workouts and tracking progress.",
+        "features": [
+          "Exercise discovery",
+          "Progress tracking",
+          "Personalized exercises",
+          "Weekly training plans"
+        ],
+        "capabilities": [
+          "Exercise discovery",
+          "Progress tracking",
+          "Personalized exercises",
+          "Weekly training plans"
+        ],
+        "date": "December 2024",
+        "featured": true,
+        "featuredOrder": 2,
+        "role": "",
+        "challenges": "",
+        "decisions": "",
+        "technologies": [],
+        "outcomes": "",
+        "gallery": [
+          {
+            "url": "packages/core/assets/projects/be-fit-2.webp",
+            "thumbnail": "packages/core/assets/projects/be-fit-2-thumb.webp",
+            "width": 403,
+            "height": 861,
+            "alt": "Be Fit exercise list",
+            "sourceUrl": "https://play-lh.googleusercontent.com/5drxtmmRIjPvK09zAtY9oK3ZI1zpQQFR8oZ0cx37K0mPt6N5yIg4s-SKgzbwhzrLR8oQkodO9G1_VXQAB2_1=w700",
+            "sourcePage": "https://play.google.com/store/apps/details?id=com.app.be_fit&hl=en"
+          },
+          {
+            "url": "packages/core/assets/projects/be-fit-4.webp",
+            "thumbnail": "packages/core/assets/projects/be-fit-4-thumb.webp",
+            "width": 407,
+            "height": 867,
+            "alt": "Be Fit weekly training plan",
+            "sourceUrl": "https://play-lh.googleusercontent.com/PJx7EbIKqP3qaYSLXuoMzHWOsFnK7gEa7xhF_LRbRb52jcEQnu9VotsZqI8gS0MLIShD03xSaHHjBjdqGffz=w700",
+            "sourcePage": "https://play.google.com/store/apps/details?id=com.app.be_fit&hl=en"
+          },
+          {
+            "url": "packages/core/assets/projects/be-fit-3.webp",
+            "thumbnail": "packages/core/assets/projects/be-fit-3-thumb.webp",
+            "width": 404,
+            "height": 866,
+            "alt": "Be Fit exercise selection",
+            "sourceUrl": "https://play-lh.googleusercontent.com/TsbEIm4Sh8T8d4g0sXBDHXUxmL4EdZIJDsIEEcEnA5sMBcpW_BUFEGHmC3e1AJcaGBM-e0SgeK6ebWp5sh90xw=w700",
+            "sourcePage": "https://play.google.com/store/apps/details?id=com.app.be_fit&hl=en"
+          },
+          {
+            "url": "packages/core/assets/projects/be-fit-1.webp",
+            "thumbnail": "packages/core/assets/projects/be-fit-1-thumb.webp",
+            "width": 415,
+            "height": 873,
+            "alt": "Be Fit sign-in screen",
+            "sourceUrl": "https://play-lh.googleusercontent.com/FSrt-CRMBTQRHJ2-kML_kWtMwCrxpz4ECCtJU07vTQYnihB9JtzfVWyWU0wxVtli-x3i1-gVrTrimUsjlLo8=w700",
+            "sourcePage": "https://play.google.com/store/apps/details?id=com.app.be_fit&hl=en"
+          }
+        ],
+        "imageAlt": "Be Fit exercise list",
+        "imageKind": "screenshot",
+        "additionalLinks": [],
+        "seoTitle": "",
+        "seoDescription": ""
+      },
+      "TopYUiskDr8FyIMKtyJ7": {
+        "order": 2,
+        "status": "published",
+        "title": "Masarat Al-Wefada",
+        "codeUrl": "",
+        "image": "packages/core/assets/projects/masarat-1-thumb.webp",
+        "tags": [
+          "Nearby place discovery",
+          "Interactive maps",
+          "Route generation"
+        ],
+        "description": "Helps pilgrims discover nearby places within and around Masjid al-Haram and generate routes.",
+        "downloads": "1K",
+        "tagColor": "",
+        "rating": 5,
+        "googlePlayUrl": "https://play.google.com/store/apps/details?id=com.cs.flutter.msaratAlwefada",
+        "appStoreUrl": "https://apps.apple.com/us/app/%D9%85%D8%B3%D8%A7%D8%B1%D8%A7%D8%AA-%D8%A7%D9%84%D9%88%D9%81%D8%A7%D8%AF%D8%A9/id6759259231",
+        "slug": "masarat-al-wefada",
+        "category": "Location & travel",
+        "overview": "Helps pilgrims discover nearby places within and around Masjid al-Haram and generate routes.",
+        "audience": "Pilgrims exploring locations within and around Masjid al-Haram.",
+        "features": [
+          "Nearby place discovery",
+          "Interactive maps",
+          "Route generation"
+        ],
+        "capabilities": [
+          "Nearby place discovery",
+          "Interactive maps",
+          "Route generation"
+        ],
+        "date": "February 2026",
+        "featured": true,
+        "featuredOrder": 3,
+        "role": "",
+        "challenges": "",
+        "decisions": "",
+        "technologies": [],
+        "outcomes": "",
+        "gallery": [
+          {
+            "url": "packages/core/assets/projects/masarat-1.webp",
+            "thumbnail": "packages/core/assets/projects/masarat-1-thumb.webp",
+            "width": 692,
+            "height": 1500,
+            "alt": "Masarat welcome screen",
+            "sourceUrl": "https://is1-ssl.mzstatic.com/image/thumb/PurpleSource221/v4/0a/20/9d/0a209d4e-616c-a60d-7fe4-50b0abce5131/Group_1000007270.png/750x1624bb.jpg",
+            "sourcePage": "https://itunes.apple.com/lookup?id=6759259231&country=us"
+          },
+          {
+            "url": "packages/core/assets/projects/masarat-3.webp",
+            "thumbnail": "packages/core/assets/projects/masarat-3-thumb.webp",
+            "width": 692,
+            "height": 1500,
+            "alt": "Masarat account details",
+            "sourceUrl": "https://is1-ssl.mzstatic.com/image/thumb/PurpleSource221/v4/c0/45/a2/c045a2aa-8575-be08-959c-b7c39554a13a/Group_1000007264.png/750x1624bb.jpg",
+            "sourcePage": "https://itunes.apple.com/lookup?id=6759259231&country=us"
+          },
+          {
+            "url": "packages/core/assets/projects/masarat-4.webp",
+            "thumbnail": "packages/core/assets/projects/masarat-4-thumb.webp",
+            "width": 692,
+            "height": 1500,
+            "alt": "Masarat account sign-in",
+            "sourceUrl": "https://is1-ssl.mzstatic.com/image/thumb/PurpleSource221/v4/11/75/77/117577f9-bdf6-496e-2d28-df3f6e3de636/Group_1000007259.png/750x1624bb.jpg",
+            "sourcePage": "https://itunes.apple.com/lookup?id=6759259231&country=us"
+          },
+          {
+            "url": "packages/core/assets/projects/masarat-2.webp",
+            "thumbnail": "packages/core/assets/projects/masarat-2-thumb.webp",
+            "width": 692,
+            "height": 1500,
+            "alt": "Masarat launch screen",
+            "sourceUrl": "https://is1-ssl.mzstatic.com/image/thumb/PurpleSource221/v4/29/63/36/2963365a-59bf-3769-2f7c-bf959d4ca4a5/Group_1000007257.png/750x1624bb.jpg",
+            "sourcePage": "https://itunes.apple.com/lookup?id=6759259231&country=us"
+          }
+        ],
+        "imageAlt": "Masarat welcome screen",
+        "imageKind": "screenshot",
+        "additionalLinks": [],
+        "seoTitle": "",
+        "seoDescription": ""
+      },
+      "o-car": {
+        "order": 4,
+        "status": "published",
+        "title": "O Car",
+        "slug": "o-car",
+        "category": "Marketplace",
+        "description": "A marketplace for discovering, buying, and selling new and used vehicles.",
+        "overview": "A marketplace for discovering, buying, and selling new and used vehicles.",
+        "audience": "",
+        "features": [
+          "Vehicle listings",
+          "New & used vehicles"
+        ],
+        "tags": [
+          "Vehicle listings",
+          "New & used vehicles"
+        ],
+        "capabilities": [
+          "Vehicle listings",
+          "New & used vehicles"
+        ],
+        "date": "March 2026",
+        "featured": false,
+        "featuredOrder": 4,
+        "role": "",
+        "challenges": "",
+        "decisions": "",
+        "technologies": [],
+        "outcomes": "",
+        "gallery": [],
+        "image": "",
+        "imageAlt": "",
+        "imageKind": "screenshot",
+        "googlePlayUrl": "https://play.google.com/store/apps/details?id=com.aait.flutter.cars",
+        "appStoreUrl": "https://apps.apple.com/us/app/o-car-%D8%A7%D9%88%D9%83%D8%A7%D8%B1/id6745544688",
+        "additionalLinks": [],
+        "seoTitle": "",
+        "seoDescription": ""
+      },
+      "ihJInWZ69RPVyULhry9x": {
+        "order": 4,
+        "status": "published",
+        "downloads": "2K",
+        "title": "D-Bikes",
+        "image": "",
+        "codeUrl": "",
+        "appStoreUrl": "https://apps.apple.com/us/app/d-bikes/id1662258319",
+        "googlePlayUrl": "https://play.google.com/store/apps/details?id=sa.aait.flutter.dbikes",
+        "tags": [
+          "Vehicle listings",
+          "Parts & accessories",
+          "New & used vehicles"
+        ],
+        "description": "A specialized marketplace for motorcycles, bicycles, marine vehicles, spare parts, and accessories.",
+        "rating": 5,
+        "tagColor": "",
+        "slug": "d-bikes",
+        "category": "Marketplace",
+        "overview": "A specialized marketplace for motorcycles, bicycles, marine vehicles, spare parts, and accessories.",
+        "audience": "",
+        "features": [
+          "Vehicle listings",
+          "Parts & accessories",
+          "New & used vehicles"
+        ],
+        "capabilities": [
+          "Vehicle listings",
+          "Parts & accessories",
+          "New & used vehicles"
+        ],
+        "date": "May–July 2025",
+        "featured": false,
+        "featuredOrder": 5,
+        "role": "",
+        "challenges": "",
+        "decisions": "",
+        "technologies": [],
+        "outcomes": "",
+        "gallery": [],
+        "imageAlt": "",
+        "imageKind": "screenshot",
+        "additionalLinks": [],
+        "seoTitle": "",
+        "seoDescription": ""
+      },
+      "A1ZV0IZJqxa6MazjIEdf": {
+        "order": 0,
+        "status": "published",
+        "rating": 5,
+        "googlePlayUrl": "https://play.google.com/store/apps/details?id=com.aait.flutter.sitr&pli=1",
+        "description": "An engagement platform for individual users and parents, supporting marriage according to Islamic principles.",
+        "tagColor": "",
+        "codeUrl": "",
+        "tags": [
+          "Individual & parent accounts",
+          "Engagement platform"
+        ],
+        "downloads": "1K",
+        "title": "Sitr · ستر",
+        "image": "",
+        "appStoreUrl": "https://apps.apple.com/us/app/%D8%B3%D8%AA%D8%B1/id6756270317",
+        "slug": "sitr",
+        "category": "Community",
+        "overview": "An engagement platform for individual users and parents, supporting marriage according to Islamic principles.",
+        "audience": "",
+        "features": [
+          "Individual & parent accounts",
+          "Engagement platform"
+        ],
+        "capabilities": [
+          "Individual & parent accounts",
+          "Engagement platform"
+        ],
+        "date": "October–December 2025",
+        "featured": false,
+        "featuredOrder": 6,
+        "role": "",
+        "challenges": "",
+        "decisions": "",
+        "technologies": [],
+        "outcomes": "",
+        "gallery": [],
+        "imageAlt": "",
+        "imageKind": "screenshot",
+        "additionalLinks": [],
+        "seoTitle": "",
+        "seoDescription": ""
+      },
+      "RnGimoF61YjcN5Az30sw": {
+        "order": 1,
+        "status": "published",
+        "description": "A simple way for job seekers to send their CV to companies in Saudi Arabia.",
+        "downloads": "1K",
+        "rating": 5,
+        "title": "Send Email",
+        "image": "",
+        "appStoreUrl": "https://apps.apple.com/us/app/send-email/id6753112989",
+        "tagColor": "",
+        "tags": [
+          "CV sharing",
+          "Company discovery"
+        ],
+        "googlePlayUrl": "https://play.google.com/store/apps/details?id=com.aait.flutter.sendEmail",
+        "codeUrl": "",
+        "slug": "send-email",
+        "category": "Careers",
+        "overview": "A simple way for job seekers to send their CV to companies in Saudi Arabia.",
+        "audience": "",
+        "features": [
+          "CV sharing",
+          "Company discovery"
+        ],
+        "capabilities": [
+          "CV sharing",
+          "Company discovery"
+        ],
+        "date": "August–September 2025",
+        "featured": false,
+        "featuredOrder": 7,
+        "role": "",
+        "challenges": "",
+        "decisions": "",
+        "technologies": [],
+        "outcomes": "",
+        "gallery": [],
+        "imageAlt": "",
+        "imageKind": "screenshot",
+        "additionalLinks": [],
+        "seoTitle": "",
+        "seoDescription": ""
+      },
+      "Kni3LhuydeJBQd6IW9PY": {
+        "order": 6,
+        "status": "published",
+        "title": "FIX Provider",
+        "image": "",
+        "description": "The provider side of FIX: receive repair requests, communicate with clients, and update job progress.",
+        "tags": [
+          "Incoming service requests",
+          "Client communication",
+          "Job progress updates"
+        ],
+        "codeUrl": "",
+        "googlePlayUrl": "https://play.google.com/store/apps/details?id=com.cs.flutterTech.fixAppProvider",
+        "tagColor": "",
+        "appStoreUrl": "https://apps.apple.com/us/app/fix-vendor/id6758222626",
+        "rating": 5,
+        "downloads": "1K",
+        "slug": "fix-provider",
+        "category": "Services",
+        "overview": "The provider side of FIX: receive repair requests, communicate with clients, and update job progress.",
+        "audience": "",
+        "features": [
+          "Incoming service requests",
+          "Client communication",
+          "Job progress updates"
+        ],
+        "capabilities": [
+          "Incoming service requests",
+          "Client communication",
+          "Job progress updates"
+        ],
+        "date": "January 2026",
+        "featured": false,
+        "featuredOrder": 8,
+        "role": "",
+        "challenges": "",
+        "decisions": "",
+        "technologies": [],
+        "outcomes": "",
+        "gallery": [],
+        "imageAlt": "",
+        "imageKind": "screenshot",
+        "additionalLinks": [],
+        "seoTitle": "",
+        "seoDescription": ""
+      },
+      "PmidVVrXE1lJGEG3mgax": {
+        "order": 7,
+        "status": "published",
+        "appStoreUrl": "https://apps.apple.com/us/app/broker-%D8%A8%D8%B1%D9%88%D9%83%D8%B1/id6476932940",
+        "tags": [
+          "Real estate listings",
+          "Property requests"
+        ],
+        "googlePlayUrl": "https://play.google.com/store/apps/details?id=com.aait.broker&pli=1",
+        "codeUrl": "",
+        "rating": 5,
+        "description": "Organizes real estate listings and requests from brokers, offices, and companies in a clear mobile experience.",
+        "downloads": "1K",
+        "image": "",
+        "title": "Broker",
+        "tagColor": "",
+        "slug": "broker",
+        "category": "Marketplace",
+        "overview": "Organizes real estate listings and requests from brokers, offices, and companies in a clear mobile experience.",
+        "audience": "",
+        "features": [
+          "Real estate listings",
+          "Property requests"
+        ],
+        "capabilities": [
+          "Real estate listings",
+          "Property requests"
+        ],
+        "date": "",
+        "featured": false,
+        "featuredOrder": 9,
+        "role": "",
+        "challenges": "",
+        "decisions": "",
+        "technologies": [],
+        "outcomes": "",
+        "gallery": [],
+        "imageAlt": "",
+        "imageKind": "screenshot",
+        "additionalLinks": [],
+        "seoTitle": "",
+        "seoDescription": ""
+      },
+      "yxexJrndhxOPnFXrrx00": {
+        "order": 8,
+        "status": "published",
+        "image": "",
+        "title": "Contract Maker",
+        "description": "A property marketplace for listing real estate for sale or rent and browsing other property advertisements.",
+        "tags": [
+          "Property listings",
+          "Sale & rental discovery"
+        ],
+        "googlePlayUrl": "https://play.google.com/store/apps/details?id=sa.aait.aspbranch.contact.maker",
+        "codeUrl": "",
+        "appStoreUrl": "https://apps.apple.com/us/app/%D8%B5%D8%A7%D9%86%D8%B9-%D8%A7%D9%84%D8%B9%D9%82%D9%88%D8%AF/id1585808602",
+        "tagColor": "",
+        "rating": 4,
+        "downloads": "5K",
+        "slug": "contract-maker",
+        "category": "Marketplace",
+        "overview": "A property marketplace for listing real estate for sale or rent and browsing other property advertisements.",
+        "audience": "",
+        "features": [
+          "Property listings",
+          "Sale & rental discovery"
+        ],
+        "capabilities": [
+          "Property listings",
+          "Sale & rental discovery"
+        ],
+        "date": "",
+        "featured": false,
+        "featuredOrder": 10,
+        "role": "",
+        "challenges": "",
+        "decisions": "",
+        "technologies": [],
+        "outcomes": "",
+        "gallery": [],
+        "imageAlt": "",
+        "imageKind": "screenshot",
+        "additionalLinks": [],
+        "seoTitle": "",
+        "seoDescription": ""
+      }
+    },
+    "experiences": {
+      "WEZ5kJy9i79E3cRLWnVN": {
+        "order": 0,
+        "status": "published",
+        "title": "Flutter Developer",
+        "company": "AWAMER ALSHABAKA (AAIT)",
+        "location": "Saudi Arabia",
+        "period": "July 2024–Present",
+        "startDate": "2024-07",
+        "endDate": "",
+        "current": true,
+        "description": "Developing and maintaining production Flutter applications across multiple domains.",
+        "achievements": [
+          "Build maintainable, real-time mobile solutions with Clean Architecture and Bloc/Cubit.",
+          "Integrate payments, maps, live and background location, notifications, and APIs.",
+          "Collaborate with backend, product, and design teams on data flows and user journeys.",
+          "Publish reusable Flutter packages and support releases through App Store Connect, Google Play Console, and Codemagic."
+        ]
+      },
+      "freelance": {
+        "order": 1,
+        "status": "published",
+        "title": "Freelance Flutter Developer",
+        "company": "Independent",
+        "location": "",
+        "period": "June 2023–June 2024",
+        "startDate": "2023-06",
+        "endDate": "2024-06",
+        "current": false,
+        "description": "End-to-end client delivery, from requirements gathering to implementation and release preparation.",
+        "achievements": [
+          "Clarify business needs with clients and translate them into prioritized features.",
+          "Coordinate APIs and user flows with designers and backend developers.",
+          "Build responsive cross-platform applications with reusable code."
+        ]
+      }
+    },
+    "packages": {
+      "pagify": {
+        "order": 0,
+        "status": "published",
+        "name": "Pagify",
+        "subtitle": "Pagination without the repetition.",
+        "description": "Paginated ListView and GridView data with loading states, scroll-position preservation, and error-handling support.",
+        "url": "https://pub.dev/packages/pagify",
+        "date": "April 2025"
+      },
+      "easy-timer-count": {
+        "order": 1,
+        "status": "published",
+        "name": "Easy Timer Count",
+        "subtitle": "Time, under your control.",
+        "description": "A customizable countdown and count-up timer widget with flexible styling and control capabilities.",
+        "url": "https://pub.dev/packages/easy_timer_count",
+        "date": "February 2025"
+      },
+      "dropinity": {
+        "order": 2,
+        "status": "published",
+        "name": "Dropinity",
+        "subtitle": "More capable dropdowns.",
+        "description": "Searchable, paginated dropdowns for local or remote data, with multi-selection support. Built to work with Pagify.",
+        "url": "https://pub.dev/packages/dropinity",
+        "date": "May 2025"
+      }
+    },
+    "technical_skills": {
+      "architecture": {
+        "order": 0,
+        "status": "published",
+        "name": "Architecture & state",
+        "description": "Maintainable foundations for growing products.",
+        "items": [
+          "Clean Architecture",
+          "MVVM / MVI",
+          "SOLID",
+          "Bloc / Cubit",
+          "Provider",
+          "MobX"
+        ],
+        "projectIds": [],
+        "level": ""
+      },
+      "integrations": {
+        "order": 1,
+        "status": "published",
+        "name": "APIs & integrations",
+        "description": "Connecting mobile experiences to real services.",
+        "items": [
+          "REST APIs",
+          "Dio / Retrofit",
+          "Payments",
+          "Google Maps",
+          "Deep linking"
+        ],
+        "projectIds": [],
+        "level": ""
+      },
+      "realtime": {
+        "order": 2,
+        "status": "published",
+        "name": "Real-time & background",
+        "description": "Keeping information and location in sync.",
+        "items": [
+          "WebSockets / Socket.IO",
+          "Live tracking",
+          "Background location",
+          "FCM / APNs"
+        ],
+        "projectIds": [],
+        "level": ""
+      },
+      "data": {
+        "order": 3,
+        "status": "published",
+        "name": "Data & Firebase",
+        "description": "Reliable data and observable applications.",
+        "items": [
+          "SQL / NoSQL",
+          "Hive / SQLite",
+          "SharedPreferences",
+          "Crashlytics",
+          "Remote Config"
+        ],
+        "projectIds": [],
+        "level": ""
+      },
+      "quality": {
+        "order": 4,
+        "status": "published",
+        "name": "Quality & collaboration",
+        "description": "Careful implementation, clear communication.",
+        "items": [
+          "Unit tests",
+          "Widget tests",
+          "Integration tests",
+          "Debugging",
+          "Localization"
+        ],
+        "projectIds": [],
+        "level": ""
+      },
+      "delivery": {
+        "order": 5,
+        "status": "published",
+        "name": "Delivery & open source",
+        "description": "Taking applications from development to release.",
+        "items": [
+          "App Store Connect",
+          "Google Play Console",
+          "Codemagic",
+          "Git / GitLab",
+          "pub.dev"
+        ],
+        "projectIds": [],
+        "level": ""
+      }
+    },
+    "education": {
+      "mansoura": {
+        "order": 0,
+        "status": "published",
+        "title": "Bachelor of Computer & Information",
+        "institution": "Mansoura University",
+        "startDate": "2021-10",
+        "endDate": "2025-07",
+        "period": "October 2021–July 2025",
+        "description": ""
+      }
+    },
+    "soft_skills": {},
+    "about_features": {},
+    "tools": {},
+    "experience_stats": {},
+    "messages": {},
+    "activity": {}
+  }
+}
