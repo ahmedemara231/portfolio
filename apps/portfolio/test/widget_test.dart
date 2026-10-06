@@ -54,6 +54,26 @@ void main() {
     expect(find.text('Visible content'), findsOneWidget);
     expect(find.byType(TweenAnimationBuilder<double>), findsNothing);
   });
+  for (final route in ['/projects/', '/projects/be-fit/']) {
+    testWidgets('hosting directory route $route loads public content', (
+      tester,
+    ) async {
+      SharedPreferences.setMockInitialValues({});
+      await tester.runAsync(() => FirestoreService.initialize());
+      tester.binding.platformDispatcher.defaultRouteNameTestValue = route;
+      addTearDown(
+        tester.binding.platformDispatcher.clearDefaultRouteNameTestValue,
+      );
+      await tester.pumpWidget(const PortfolioApp());
+      await tester.pumpAndSettle();
+      expect(find.text('This page took a wrong turn.'), findsNothing);
+      expect(
+        find.text(route == '/projects/' ? 'Work in the wild.' : 'Be Fit'),
+        findsOneWidget,
+      );
+      expect(tester.takeException(), isNull);
+    });
+  }
   testWidgets(
     'gallery exposes a working accessible action and keyboard controls',
     (tester) async {

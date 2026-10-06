@@ -255,7 +255,7 @@ class _CollectionPageState extends State<CollectionPage> {
             if (snapshot.hasError) {
               return StateMessage(
                 title: 'Could not load content',
-                message: 'Check your connection and administrator access.',
+                message: 'Check your connection and Firebase permissions.',
                 action: OutlinedButton(
                   onPressed: () => setState(
                     () => stream = FirestoreService.collectionStreamWithIds(

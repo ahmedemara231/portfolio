@@ -30,7 +30,7 @@ The contact form writes to the `messages` collection in the `portfolio-60d78` Fi
 
 ## Firebase mode and production preparation
 
-Firebase is the default backend for both apps, including ordinary `flutter build web` builds. Explicit local previews and local-storage tests use `--dart-define=USE_FIREBASE=false`; production builds omit `USE_EMULATORS`. The existing Firebase project configuration is retained. The dashboard requires Email/Password Authentication and an `admin: true` custom claim assigned from a trusted environment. The session guard covers the entire navigation stack, including open editors and dialogs. Ordinary authenticated users cannot enter the dashboard or write content. Anonymous Authentication must be enabled to use the contact form. You can hide the form in Profile & contact and keep the direct email action.
+Firebase is the default backend for both apps, including ordinary `flutter build web` builds. Explicit local previews and local-storage tests use `--dart-define=USE_FIREBASE=false`; production builds omit `USE_EMULATORS`. The existing Firebase project configuration is retained. The dashboard opens directly without an email/password page or an administrator gate. Its URL is publicly accessible. Firebase rules still govern access to documents and uploads; the repository rules require an `admin: true` claim for management operations, and the live backend protects the inbox separately. Anonymous Authentication must be enabled to use the contact form. You can hide the form in Profile & contact and keep the direct email action.
 
 Anonymous Authentication and the contact collections' validation, cooldown, and private-read rules are configured in `portfolio-60d78`. Before deploying the full content rules and redesigned Firebase apps:
 
@@ -50,7 +50,7 @@ node tools/security/migrate.mjs --project portfolio-60d78
 # --apply is the explicit write option; it is never the default.
 ```
 
-The migration uses application-default administrator credentials. It only adds missing publication, address, and ordering fields, rechecking each document in a transaction. Existing descriptions, links, and unknown fields remain intact. New draft documents require an explicit status and cannot be read by public queries or direct Firestore requests.
+The migration uses application-default administrator credentials. It only adds missing publication, address, and ordering fields, rechecking each document in a transaction. Existing descriptions, links, and unknown fields remain intact. For legacy projects with no featured choices, add `--feature-legacy-projects` to select the first four published projects in their saved order; existing featured choices and drafts are preserved. New draft documents require an explicit status and cannot be read by public queries or direct Firestore requests.
 
 Firebase Hosting configuration for each existing site is retained. Vercel configurations retain the current Flutter outputs and routes; generated project HTML must be copied with the build. No production publishing command was run.
 
@@ -103,6 +103,7 @@ dart analyze .
 (cd apps/portfolio && flutter test --no-pub --dart-define=USE_FIREBASE=false)
 (cd apps/dashboard && flutter test --no-pub --dart-define=USE_FIREBASE=false)
 python3 tools/test_metadata.py
+node --test tools/security/migration_plan.test.mjs
 firebase emulators:exec --project demo-portfolio --only firestore,storage \
   'node --test tools/security/rules.test.mjs'
 ```
@@ -113,11 +114,15 @@ Motion tests also cover visibility-triggered reveals, stable tap targets, keyboa
 
 Browser verification uses Playwright and local Chrome. Install `tools/browser` dependencies and run `npm test` there while the preview is running. It exercises actual controls, saves and reloads content, checks public publication behavior, and captures responsive screenshots in `.preview`.
 
+Run `npm run test:projects` for a read-only check of homepage selection, the full project collection, case-study navigation and reload, and mobile content. Set `PORTFOLIO_PREVIEW_URL`, `EXPECTED_PROJECTS`, and `EXPECTED_FEATURED` to check a deployed portfolio; the defaults verify the local fixture with eleven projects and four selections.
+
 Run `npm run test:studio` for the redesigned dashboard workflows: featured selection and persistence, unsaved profile previews, capability references, screenshot viewing and ordering, and compact navigation and editors. Captures are written to `.preview/studio`. The script only accepts a local preview URL.
 
 Run `npm run test:motion` in the same directory to exercise real pointer feedback, gallery and dashboard preview transitions, responsive scrolling, and reduced motion. Animation captures are written to `.preview/motion`.
 
-Run `node tools/browser/auth_verify.cjs` with the Firebase integration preview to check sign-in, non-admin denial, authenticated persistence, public updates, metadata exports, anonymous contact submissions, mobile inbox dialogs, and session protection of open editors. `node tools/browser/media_verify.cjs` checks actual uploads, private draft media, publication, safe deletion, and CV downloads. Demo sign-ins use tab-scoped sessions so public visitors and the owner can be exercised independently on the local shared origin.
+Run `npm run test:dashboard-access` in `tools/browser` against a dashboard build served at `http://localhost:4185` (or set `DASHBOARD_PREVIEW_URL`) to check direct access from a fresh browser, reloads, mobile navigation, and the absence of login controls. This check does not write data.
+
+Run `node tools/browser/auth_verify.cjs` with the Firebase integration preview to check direct dashboard access, backend-authorized persistence, public updates, metadata exports, anonymous contact submissions, and mobile inbox dialogs. `node tools/browser/media_verify.cjs` checks actual uploads, private draft media, publication, safe deletion, and CV downloads. These integration scripts authenticate the seeded emulator owner programmatically for protected backend operations; there is no dashboard login page. Demo sessions are tab-scoped so public visitors and the owner can be exercised independently on the local shared origin.
 
 Run `npm run test:contact` in `tools/browser` with the Firebase integration preview to verify the contact form creates a document in the emulator's `messages` collection, persists its fields and server timestamp, and reports cooldown rejection without showing success. This check also requires `tools/security` dependencies and removes only the emulator message and cooldown record it creates.
 

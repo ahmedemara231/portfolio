@@ -68,7 +68,7 @@ class StudioContent extends ChangeNotifier {
   }
 
   void _failed(Object _) {
-    error = 'Check your connection and administrator access, then try again.';
+    error = 'Check your connection and Firebase permissions, then try again.';
     _pending.clear();
     notifyListeners();
   }

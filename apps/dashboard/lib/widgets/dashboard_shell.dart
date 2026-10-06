@@ -1,5 +1,4 @@
 import 'package:core/core.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import '../content_schema.dart';
 import '../pages/collection_page.dart';
@@ -274,24 +273,20 @@ class _DashboardShellState extends State<DashboardShell> {
               ],
             ),
           ),
-          const Divider(),
-          Padding(
-            padding: const EdgeInsets.all(16),
-            child: FirestoreService.useFirebase
-                ? TextButton.icon(
-                    onPressed: () => FirebaseAuth.instance.signOut(),
-                    icon: const Icon(Icons.logout, size: 18),
-                    label: const Text('Sign out'),
-                  )
-                : const Text(
-                    'LOCAL WORKSPACE',
-                    style: TextStyle(
-                      fontSize: 10,
-                      color: Design.muted,
-                      letterSpacing: 1.6,
-                    ),
-                  ),
-          ),
+          if (!FirestoreService.useFirebase) ...[
+            const Divider(),
+            const Padding(
+              padding: EdgeInsets.all(16),
+              child: Text(
+                'LOCAL WORKSPACE',
+                style: TextStyle(
+                  fontSize: 10,
+                  color: Design.muted,
+                  letterSpacing: 1.6,
+                ),
+              ),
+            ),
+          ],
         ],
       ),
     ),

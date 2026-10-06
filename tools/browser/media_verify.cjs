@@ -17,8 +17,12 @@ async function contains(page,text){try{await page.waitForFunction(t=>(document.b
  try{
  const context=await browser.newContext({viewport:{width:1440,height:1000},acceptDownloads:true});
  const admin=await context.newPage();recordErrors(admin);await admin.goto(base+'/admin/');await admin.waitForSelector('flt-semantics',{timeout:60000});
- await fill(admin,admin.getByRole('textbox',{name:'Email',exact:true}),'studio@example.test');
- await fill(admin,admin.getByRole('textbox',{name:'Password',exact:true}),'local-preview-only');await admin.getByRole('button',{name:'Sign in',exact:true}).click();await contains(admin,'Welcome to your studio.');
+ await admin.evaluate(async()=>{
+  const auth=window.firebase_auth.getAuth();
+  if(auth.app.options.projectId!=='demo-portfolio')throw Error('Use the local Firebase emulator preview.');
+  await window.firebase_auth.signInWithEmailAndPassword(auth,'studio@example.test','local-preview-only');
+ });
+ await admin.reload();await admin.waitForSelector('flt-semantics',{timeout:60000});await contains(admin,'Welcome to your studio.');
  await admin.getByRole('button',{name:'Projects',exact:true}).click();await admin.getByRole('button',{name:'Add project',exact:true}).click();
  await admin.setViewportSize({width:320,height:800});await pause(350);await admin.screenshot({path:path.join(root,'.preview/project-editor-320.png')});
  await admin.setViewportSize({width:1440,height:1000});await pause(350);

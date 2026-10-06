@@ -45,7 +45,10 @@ class _PortfolioAppState extends State<PortfolioApp> {
   }
 
   Route<dynamic> route(RouteSettings settings) {
-    final path = Uri.parse(settings.name ?? '/').path;
+    // Hosting may redirect generated HTML directories to a trailing slash.
+    final path = Uri.parse(
+      settings.name ?? '/',
+    ).path.replaceFirst(RegExp(r'/+$'), '');
     final Widget page;
     if (path == '/' || path.isEmpty) {
       page = HomeScreen(content: content);
